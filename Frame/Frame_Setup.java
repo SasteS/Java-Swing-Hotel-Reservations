@@ -14,6 +14,7 @@ import java.util.Collection;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -31,7 +32,6 @@ public class Frame_Setup implements ActionListener {
 	private JLabel passLabel;
 	private JPasswordField passText;
 	private JButton btn;
-	private JLabel success;
 	
 	private boolean check;
 	private String user;
@@ -100,10 +100,6 @@ public class Frame_Setup implements ActionListener {
 		btn.addActionListener(this);
 		panel.add(btn);
 		
-		success = new JLabel("");
-		success.setBounds(10, 110, 300, 25);
-		panel.add(success);
-		
 		dialog.setVisible(true);
 	}
 	
@@ -122,7 +118,6 @@ public class Frame_Setup implements ActionListener {
 		//	}
 		//	System.out.println();
 			if(user.equals(item[0]) && pass.equals(item[1])) {
-				success.setText("Login successful");
 				this.check = true;
 				this.position = item[2];
 				dialog.dispose();
@@ -135,7 +130,8 @@ public class Frame_Setup implements ActionListener {
 			}
 		}
 		if(this.check == false) {
-			success.setText("Wrong input!");
+			JFrame optFrame = new JFrame();
+			JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message", JOptionPane.OK_OPTION);    		
 		}
 	}
 	
