@@ -113,10 +113,6 @@ public class Frame_Setup implements ActionListener {
 		Collection<String[]> coll = IscitajCSV();
 		
 		for(String[] item : coll) {
-		//	for(String index2 : index1) {
-		//		System.out.println(index2);
-		//	}
-		//	System.out.println();
 			if(user.equals(item[0]) && pass.equals(item[1])) {
 				this.check = true;
 				this.position = item[2];
@@ -124,14 +120,13 @@ public class Frame_Setup implements ActionListener {
 				try {
 					Logged_User_frame luf = new Logged_User_frame(this.user, this.position);
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
 		}
 		if(this.check == false) {
 			JFrame optFrame = new JFrame();
-			JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message", JOptionPane.OK_OPTION);    		
+			JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message", JOptionPane.OK_OPTION);
 		}
 	}
 	
