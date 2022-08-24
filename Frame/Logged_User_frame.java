@@ -35,6 +35,7 @@ public class Logged_User_frame {
 	private JButton btn_dodaj_rez;
 	private JButton btn_pregled_rez;
 	private JButton btn_potvrdjene_rez;
+	private JButton btn_pregled_soba;
 	
 //	private String user;
 //	private String pozicija;
@@ -176,6 +177,18 @@ public class Logged_User_frame {
 		           }
 		    	});
 			panel.add(btn_potvrdjene_rez);
+			
+			btn_pregled_soba = new JButton("Pregled soba");
+			btn_pregled_soba.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+						recepcioner.Pregled_Soba();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		           }
+		    	});
+			panel.add(btn_pregled_soba);
 		}
 		else if(position.equals("s")) {
 			frame.setTitle("Maid manager");

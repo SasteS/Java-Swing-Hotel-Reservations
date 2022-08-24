@@ -15,7 +15,7 @@ public class Rezervacije {
 		this.id = (int)(Math.random() * 100);
 		this.pocetak = LocalDate.now();
 		this.kraj = LocalDate.now().plusDays(5);
-		this.tip = Tip_Soba.ONE;
+		this.tip = Tip_Soba.TWO_TWO;
 		this.username = "";
 		this.stanje = Stenje_Rezervacija.NA_CEKANJU;
 		this.cena = 2000;

@@ -29,6 +29,7 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -95,6 +96,8 @@ public class Recepcioner extends Zaposleni {
 	JFrame sobe_window;
 	JPanel sobe_window_panel;
 	
+	JFrame pregled_soba;
+	JPanel pregled_soba_panel;
 	//metode
 	public void RegisterGuest() { //e novog gosta - registracija 
 		dialog = new JDialog();
@@ -321,7 +324,7 @@ public class Recepcioner extends Zaposleni {
 		final List<String[]> rezervacije_csv = new ArrayList<String[]>();
 		while ((line = reader.readLine()) != null) {
 			String[] temp = line.split(",");				
-			if (temp[4].equals("ODOBRENA")) {
+			if (temp[4].equals("ODOBRENA") && temp[8].equals("n")) {
 				rezervacije_csv.add(temp);	
 			}
 		}
@@ -373,30 +376,70 @@ public class Recepcioner extends Zaposleni {
 							List<Soba> lista_soba = sobe.getSobe();
 							
 							String tip_potrebne_sobe = table.getValueAt(red, 3).toString();
-							for (String[] s : rezervacije_csv) {
-								if (s[6].equals(entitet_za_dodelu_sobe)) { //AKO SE POKLAPA ID
-									
-								}
-							}
+							DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+							LocalDate pocetni = LocalDate.parse(table.getValueAt(red, 1).toString(), formatter);
+							LocalDate krajnji = LocalDate.parse(table.getValueAt(red, 2).toString(), formatter);
 							
-							List<Soba> temp = new ArrayList<Soba>();
+							List<Soba> temp_sobe = new ArrayList<Soba>();
 							for (Soba s : lista_soba) {
-								if (!s.get_tip().equals(Tip_Soba.valueOf(tip_potrebne_sobe))) {
-									temp.add(s);
+								List<LocalDate[]> dates_list = s.get_dates();
+								LocalDate[] datumi_za_proveru = { pocetni, krajnji };
+								
+								if (s.get_Stanje().equals(Stanje_Sobe.SLOBODNA)) {
+									boolean ne_sadrzi_date = true;
+									if (dates_list.contains(datumi_za_proveru)) {
+										ne_sadrzi_date = false;
+									}
+									if (ne_sadrzi_date == true) {										
+										if (Tip_Soba.valueOf(tip_potrebne_sobe).equals(Tip_Soba.ONE_ONE)) { // || tip_potrebne_sobe.equals(Tip_Soba.TWO)) {
+											if (s.get_tip().equals(Tip_Soba.ONE_ONE) == false && s.get_tip().equals(Tip_Soba.TWO) == false) {												
+												temp_sobe.add(s);
+												continue;
+											}
+										}
+										else if (Tip_Soba.valueOf(tip_potrebne_sobe).equals(Tip_Soba.TWO)) { // || tip_potrebne_sobe.equals(Tip_Soba.TWO)) {
+											if (s.get_tip().equals(Tip_Soba.ONE_ONE) == false && s.get_tip().equals(Tip_Soba.TWO) == false) {												
+												temp_sobe.add(s);
+												continue;
+											}
+										}
+										else if (Tip_Soba.valueOf(tip_potrebne_sobe).equals(Tip_Soba.ONE)) {
+											if (s.get_tip().equals(Tip_Soba.ONE) == false) {												
+												temp_sobe.add(s);
+												continue;
+											}
+										}
+										else if (Tip_Soba.valueOf(tip_potrebne_sobe).equals(Tip_Soba.TWO_ONE)) {
+											if (s.get_tip().equals(Tip_Soba.TWO_ONE) == false) {												
+												temp_sobe.add(s);
+												continue;
+											}
+										}
+										else if (Tip_Soba.valueOf(tip_potrebne_sobe).equals(Tip_Soba.TWO_TWO)) {
+											if (s.get_tip().equals(Tip_Soba.TWO_TWO) == false) {												
+												temp_sobe.add(s);
+												continue;
+											}
+										}
+									}
 								}
-								if (true) { //DATUM ISTO MORA DA SE PROVERI A I STANJE
-									
-								}
-								if(true) {
-									
+								else {
+									temp_sobe.add(s);
 								}
 							}
 							
-							for(Soba s : temp) {
+							for(Soba s : temp_sobe) {
 								lista_soba.remove(s);
 							}
 							
-							Tabela_Potencijalnih_Soba(lista_soba);
+							if (lista_soba.isEmpty()) {
+								 JOptionPane.showMessageDialog(null, "Ne postoje dostupne sobe", "Error message", JOptionPane.ERROR_MESSAGE);
+							}
+							else {
+								potvrdjene_rez.dispose();
+								LocalDate[] datumi_za_proveru = { pocetni, krajnji };
+								Tabela_Potencijalnih_Soba(lista_soba, datumi_za_proveru, entitet_za_dodelu_sobe);	
+							}
 						}
 					
 				  } catch (IOException e1) {
@@ -410,7 +453,7 @@ public class Recepcioner extends Zaposleni {
 		potvrdjene_rez.setVisible(true);
 	}
 	
-	public void Tabela_Potencijalnih_Soba(List<Soba> lista_soba) {
+	public void Tabela_Potencijalnih_Soba(List<Soba> lista_soba, final LocalDate[] datumi_za_proveru, final String entitet_za_dodelu_sobe) {
 		sobe_window = new JFrame("Pregled rezervacija");
 		sobe_window_panel = new JPanel();
 
@@ -453,10 +496,139 @@ public class Recepcioner extends Zaposleni {
 
 		tableSorter.setModel((AbstractTableModel) table.getModel());
 		table.setRowSorter(tableSorter);
-
+				
 		JScrollPane scrollPane = new JScrollPane(table);
 		sobe_window_panel.add(scrollPane);						
-
+		
+		JButton dodeli_sobu = new JButton("Dodeli sobu");
+		sobe_window_panel.add(dodeli_sobu);
+		
+		dodeli_sobu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            	int red = table.getSelectedRow();
+        		if(red == -1) {
+        			JOptionPane.showMessageDialog(null, "Morate odabrati red u tabeli.", "Greska", JOptionPane.WARNING_MESSAGE);
+        		}
+        		else {
+        			String broj_izabrane_sobe = table.getValueAt(red, 0).toString();
+        			try {
+						reader = new BufferedReader(new FileReader("src\\Sobe_Datumi.csv"));
+						String line = "";
+						List<String[]> update_list = new ArrayList<String[]>();
+						while ((line = reader.readLine()) != null) {
+							String[] temp = line.split(",");
+							update_list.add(temp);
+						}
+						
+						List<String[]> update_list2 = new ArrayList<String[]>();
+						for (String[] s : update_list) {
+							if (s[0].equals(broj_izabrane_sobe)) {
+								String[] temp;
+								String tmp = "";
+								for (String item : s) {
+									tmp += item + ",";
+								}
+								tmp += datumi_za_proveru[0] + ";" + datumi_za_proveru[1];
+								s = tmp.split(",");
+							}
+							update_list2.add(s);
+						}
+						
+						FileWriter writer = new FileWriter("src\\Sobe_Datumi.csv");						
+						writer.write("");						
+						writer.close();
+						
+						//PUNI NOVIM INFORMACIJAMA						
+						writer = new FileWriter("src\\Sobe_Datumi.csv", true);
+						for (String[] temp : update_list2) {
+							String ispis = "";
+							for (String s : temp) {
+								ispis += s + ",";
+							}
+							ispis = ispis.substring(0, ispis.length() - 1);
+							System.out.println(ispis);
+							writer.write(ispis + "\n");
+						}
+						writer.close();
+						
+						
+						//MENJA STATUS SOBE NA ZAUZETO
+						reader = new BufferedReader(new FileReader("src\\Sobe.csv"));
+						line = "";
+						update_list.clear();
+						while ((line = reader.readLine()) != null) {
+							String[] temp = line.split(",");
+							update_list.add(temp);
+						}
+						
+						for (String[] item : update_list) {
+							if (item[0].equals(broj_izabrane_sobe.toString())) {
+								item[3] = "ZAUZETO";
+							}
+						}
+						
+						writer = new FileWriter("src\\Sobe.csv");						
+						writer.write("");						
+						writer.close();
+						
+						writer = new FileWriter("src\\Sobe.csv", true);
+						for (String[] temp : update_list) {
+							String ispis = "";
+							for (String s : temp) {
+								ispis += s + ",";
+							}
+							ispis = ispis.substring(0, ispis.length() - 1);
+							System.out.println(ispis);
+							writer.write(ispis + "\n");
+						}
+						writer.close();
+						
+						JOptionPane.showMessageDialog(null, "Uspesno dodeljena soba!", "Info", JOptionPane.INFORMATION_MESSAGE);
+						sobe_window.dispose(); //MORAM JOS DA UKLONIM REZERVACIJU IZ CHECK_IN OPCIJA
+						
+						//TREBA DA OVERWRITE REZERVACIJE.CSV DA DODA NA REZERVACIJU KOJOJ JE DODAO SOBU UMESTO,N ,D
+						reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
+												
+						line = "";
+						final List<String[]> rezervacije_csv = new ArrayList<String[]>();
+						while ((line = reader.readLine()) != null) {
+							String[] temp = line.split(",");				
+							rezervacije_csv.add(temp);
+						}
+						reader.close();
+						
+						writer = new FileWriter("src\\Rezervacije.csv");
+						writer.write("");
+						writer.close();
+						
+						writer = new FileWriter("src\\Rezervacije.csv", true);
+						for (String[] temp : rezervacije_csv) {
+							String ispis = "";
+							for (String s : temp) {
+								ispis += s + ",";
+							}							
+							ispis = ispis.substring(0, ispis.length() - 1);
+							if (temp[6].equals(entitet_za_dodelu_sobe)) {
+								if (ispis.substring(ispis.length() - 1).equals("n")) {
+									ispis = ispis.substring(0, ispis.length() - 1);
+									ispis += "d";
+								}
+							}
+							System.out.println(ispis);
+							writer.write(ispis + "\n");
+						}
+						writer.close();						
+						
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+        		}
+            }
+		});
+		
 		sobe_window.add(sobe_window_panel);
 		sobe_window.setVisible(true);
 	}
@@ -547,7 +719,7 @@ public class Recepcioner extends Zaposleni {
 					JOptionPane.showMessageDialog(null, "Morate odabrati red u tabeli.", "Greska", JOptionPane.WARNING_MESSAGE);
 				}
 				else {
-					String entitet_za_odobravanje = table.getValueAt(red, 0).toString();					
+					String entitet_za_odobravanje = table.getValueAt(red, 0).toString();
 					for(String[] r : rezervacije_csv) {
 						if (r[6].equals(entitet_za_odobravanje)) {
 							r[4] = "ODOBRENA";
@@ -752,5 +924,100 @@ public class Recepcioner extends Zaposleni {
 
 		pregled.add(pregled_panel);
 		pregled.setVisible(true);
+	}
+
+	public void Pregled_Soba() throws IOException {
+		pregled_soba = new JFrame("Rezervacija");
+		pregled_soba_panel = new JPanel();
+
+		pregled_soba.setSize(650, 500);
+
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		final int x = (int) ((dimension.getWidth() - pregled_soba.getWidth()) / 2);
+		final int y = (int) ((dimension.getHeight() - pregled_soba.getHeight()) / 2);
+		pregled_soba.setLocation(x, y);
+
+		// CLOSING EVENT
+		pregled_soba.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		pregled_soba.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				int opt = JOptionPane.showConfirmDialog(null, "Do you want to close the window?", "close",
+						JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				if (opt == JOptionPane.YES_OPTION) {
+					e.getWindow().dispose();
+				}
+			}
+		});
+
+		pregled_soba.add(pregled_soba_panel);
+
+		// TABELA
+		String line = "";
+
+		reader = new BufferedReader(new FileReader("src\\Sobe.csv"));
+
+		int lines = 0;
+		while ((line = reader.readLine()) != null) {
+			lines++;
+		}
+		reader.close();
+
+		String[] collNames = { "Broj sobe", "Tip sobe", "Broj ljudi", "Stanje", "Cena" };
+		Object[][] data = new Object[lines][5];
+
+		Sobe sobe = new Sobe();
+
+		int i = 0;
+		int oduzmi_sobe_koje_ne_idu_u_tabelu = 0;
+		for (Soba soba : sobe.getSobe()) {
+			data[i][0] = soba.get_broj();
+
+			Tip_Soba temp_tip = soba.get_tip();
+			if (temp_tip.equals(Tip_Soba.ONE)) {
+				data[i][1] = "jednokrevetna";
+			} else if (temp_tip.equals(Tip_Soba.ONE_ONE) || temp_tip.equals(Tip_Soba.TWO)) {
+				data[i][1] = "dvokrevetna";
+			} else if (temp_tip.equals(Tip_Soba.TWO_ONE)) {
+				data[i][1] = "trokrevetna";
+			} else if (temp_tip.equals(Tip_Soba.TWO_TWO)) {
+				data[i][1] = "četvorokrevetna";
+			}
+
+			data[i][2] = soba.get_broj_ljudi();
+
+			Stanje_Sobe temp_stanje = soba.get_Stanje();
+			if (temp_stanje.equals(Stanje_Sobe.ZAUZETO)) {
+				data[i][3] = "zauzeta";
+			} else if (temp_stanje.equals(Stanje_Sobe.SPREMANJE)) {
+				data[i][3] = "spremanje";
+			} else if (temp_stanje.equals(Stanje_Sobe.SLOBODNA)) {
+				data[i][3] = "slobodna";
+			}
+			
+			data[i][4] = soba.get_cena();
+			i++;
+		}
+		Object[][] data2 = new Object[i][5]; // IZBACUJE VISAK PRAZNIH REDOVA U TABELI(ONI U KOJIMA BI BILI IZBACEBE
+												// SOBE)
+		for (int j = 0; j < i; j++) {
+			for (int k = 0; k < 5; k++) {
+				data2[j][k] = data[j][k];
+			}
+		}
+
+		final JTable table = new JTable(data2, collNames);
+		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.getTableHeader().setReorderingAllowed(false);
+		table.setPreferredScrollableViewportSize(new Dimension(500, 150));
+		table.setFillsViewportHeight(true);
+
+		tableSorter.setModel((AbstractTableModel) table.getModel());
+		table.setRowSorter(tableSorter);
+
+		JScrollPane scrollPane = new JScrollPane(table);
+		pregled_soba_panel.add(scrollPane);
+
+		pregled_soba.setVisible(true);
 	}
 }

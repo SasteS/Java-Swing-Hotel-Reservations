@@ -53,7 +53,7 @@ public class Sobe {
 			ArrayList<String[]> temp = dates.get(item[0]);
 
 			for (String[] niz : temp) {				
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy."); 
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
 				LocalDate date1 = LocalDate.parse(niz[0], formatter);
 				LocalDate date2 = LocalDate.parse(niz[1], formatter);
 				
@@ -92,7 +92,7 @@ public class Sobe {
 			String[] red = line.split(",");
 			ArrayList<String[]> temp_list = new ArrayList<String[]>();
 			for (int i = 1; i < red.length; i++) {
-				String[] temp = red[i].split("-");
+				String[] temp = red[i].split(";");
 				temp_list.add(temp);				
 			}
 			dates.put(red[0], temp_list);
@@ -109,10 +109,37 @@ public class Sobe {
 		}
 		reader.close();
 		
+		reader = new BufferedReader(new FileReader("src\\Sezone.csv"));
+		line = "";
+		List<String[]> sezone = new ArrayList<String[]>();
+		while ((line = reader.readLine()) != null) {
+			sezone.add(line.split(","));
+		}
+		reader.close();
+				
+		LocalDate sad = LocalDate.now();
+		String sezona1 = "";
+		String m = sad.getMonth().toString();
+		for (String[] sezona : sezone) {
+			String[] temp = sezona[1].split(";");						
+			for (String s : temp) {
+				if (s.equals(m)) {					
+					sezona1 = sezona[0];					
+					break;
+				}
+			}			
+		}
+		
 		for (Soba s : arr) {
 			for (String[] item : niz) {
-				if (item[0].equals(s.get_tip().toString())) {
-					s.set_cena(Integer.parseInt(item[1]));
+				String[] temp = item[1].split(";");
+				if (item[0].equals(s.get_tip().toString())) {		
+					if (sezona1.equals("high"))
+						s.set_cena(Integer.parseInt(temp[1]));
+					else if (sezona1.equals("mid"))
+						s.set_cena(Integer.parseInt(item[2]));
+					else if (sezona1.equals("low"))
+						s.set_cena(Integer.parseInt(item[0]));
 				}
 			}
 		}
