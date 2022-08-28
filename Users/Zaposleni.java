@@ -1,7 +1,7 @@
 package Users;
 
 public class Zaposleni extends Korisnik {
-	private String sprema;
-	private int staz;
-	private int plata;
+	protected String sprema;
+	protected int staz;
+	protected int plata;
 }

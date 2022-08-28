@@ -24,6 +24,7 @@ import java.awt.Window;
 import Users.Admin;
 import Users.Gosti;
 import Users.Recepcioner;
+import Users.Sobarica;
 
 public class Logged_User_frame {
 	private JFrame frame;
@@ -36,6 +37,8 @@ public class Logged_User_frame {
 	private JButton btn_pregled_rez;
 	private JButton btn_potvrdjene_rez;
 	private JButton btn_pregled_soba;
+	private JButton btn_check_out;
+	private JButton btn_sobe_za_ciscenje;
 	
 //	private String user;
 //	private String pozicija;
@@ -87,13 +90,15 @@ public class Logged_User_frame {
 			
 			JMenu prikazEntitetaMenu = new JMenu("Meni za prikaz entiteta");
 			JMenuItem prikazEntitetaItem = new JMenuItem("Prikazi tabelu entiteta");
+			JMenuItem prikazCenaItem = new JMenuItem("Prikazi tabelu cena");
 			prikazEntitetaMenu.add(prikazEntitetaItem);
+			prikazEntitetaMenu.add(prikazCenaItem);
 			mainMenuAdmin.add(prikazEntitetaMenu);
 			
 			frame.setJMenuBar(mainMenuAdmin);
 			
 			//IZBRISATI OVE 3 LINIJE
-			JLabel reminder = new JLabel("Ovde mogu da stoje informacije o adminu tima slicica neka i ime prezime i user");
+			JLabel reminder = new JLabel("Username: " + username + "\nPozicija: admin");
 			panel.add(reminder);
 			final Admin admin = new Admin();
 			//DODAVANJE ENTITETA
@@ -105,7 +110,7 @@ public class Logged_User_frame {
 		    	});
 			
 			//IZLISTAVANJE ENTITETA
-			prikazEntitetaItem .addActionListener(new ActionListener() {
+			prikazEntitetaItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
 						admin.PrikazSvihEndtiteta();
@@ -114,7 +119,17 @@ public class Logged_User_frame {
 							e1.printStackTrace();
 						}
 		           }
-		    	});					
+		    	});
+			
+			prikazCenaItem.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+		        		    admin.View_Cenovink();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		           }
+		    	});
 		}
 		else if(position.equals("r")) {
 			frame.setTitle("Recepcionist manager");
@@ -189,11 +204,34 @@ public class Logged_User_frame {
 		           }
 		    	});
 			panel.add(btn_pregled_soba);
+			
+			btn_check_out = new JButton("Zauzete sobe");
+			btn_check_out.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+						recepcioner.Check_Out();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		           }
+		    	});
+			panel.add(btn_check_out);
 		}
 		else if(position.equals("s")) {
 			frame.setTitle("Maid manager");
-			label = new JLabel("Welcome " + username + " na poziciji " + position);
-			panel.add(label);
+			final Sobarica sobarica = new Sobarica();
+			btn_sobe_za_ciscenje = new JButton("Sobe za čišćenje");
+			btn_sobe_za_ciscenje.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {			        	 
+		        	   try {
+						sobarica.Sobe_Za_Ciscenje(username);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+		           }
+		    	});
+			panel.add(btn_sobe_za_ciscenje);
+			
 		}
 		else {
 			frame.setTitle("Guest manager");

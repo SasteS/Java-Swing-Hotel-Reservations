@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class Admin extends Korisnik {
     
     BufferedReader reader;
 	
-    protected JToolBar mainToolbar = new JToolBar();
+    protected JToolBar mainToolbar;
 	protected JButton btnAdd = new JButton();
 	protected JButton btnEdit = new JButton();
 	protected JButton btnDelete = new JButton();
@@ -84,6 +85,10 @@ public class Admin extends Korisnik {
 	protected JTable table;
 	protected TableRowSorter<AbstractTableModel> tableSorter = new TableRowSorter<AbstractTableModel>();
     
+	JFrame cenovnik_teble;
+	JPanel cenovnik_teble_panel;
+	JButton btnEdit_cene  = new JButton();
+	
 	//metode
 	public void DodajZaposlenog() {//registruje novog zaposlenog
 		dialog = new JDialog();
@@ -346,7 +351,8 @@ public class Admin extends Korisnik {
 			//coll.add(red);
 		}
 		reader.close();
-		//System.out.println(i);							
+		//System.out.println(i);	
+		mainToolbar = new JToolBar();
 		ImageIcon deleteIcon = new ImageIcon("src\\img\\remove.gif");
 		btnDelete.setIcon(deleteIcon);
 		btnDelete.setText("Delete user");
@@ -419,5 +425,204 @@ public class Admin extends Korisnik {
 	    lista_entiteta.add(lista_entiteta_panel);
 	    lista_entiteta.setTitle("Entity table");
 	    lista_entiteta.setVisible(true);
+	}
+	
+	public void View_Cenovink() throws IOException {
+		cenovnik_teble = new JFrame("Cenovnik");
+		cenovnik_teble_panel = new JPanel();
+    	
+		cenovnik_teble.setSize(700, 300);
+    	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    final int x = (int) ((dimension.getWidth() - cenovnik_teble.getWidth()) / 2);
+	    final int y = (int) ((dimension.getHeight() - cenovnik_teble.getHeight()) / 2);
+	    cenovnik_teble.setLocation(x, y);
+	    
+	    cenovnik_teble.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	    cenovnik_teble.addWindowListener(new WindowAdapter() {
+	    	@Override
+	    	public void windowClosing(WindowEvent e) {
+	    		int opt = JOptionPane.showConfirmDialog(null, "Do you want to close this window?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			e.getWindow().dispose();
+	    		}
+	    	}
+	    });	    
+	    cenovnik_teble.add(cenovnik_teble_panel);
+	    
+	    //TABELA
+	    String line = "";
+		
+	    reader = new BufferedReader(new FileReader("src\\Cenovnik.csv"));
+		List<String[]> arr = new ArrayList<String[]>();
+		List<String[]> arr2 = new ArrayList<String[]>();
+		int lines = 0;
+		while((line = reader.readLine()) != null) {
+			String[] temp = line.split(",");
+			String[] temp2 = temp[1].split(";");
+			arr.add(temp);
+			arr2.add(temp2);
+			lines++;
+		}
+		reader.close();
+		
+	    String[] collNames = {"Naziv", "Predsezona", "Sezona", "Postsezona",};
+	    Object[][] data = new Object[lines][4];
+	    
+	    int i = 0;
+	    for (String[] s : arr) {	    	  		    	
+	    	if (s[0].equals("ONE")) {
+	    		data[i][0] = "jednokrevetna";
+	    	}
+	    	else if (s[0].equals("TWO")) {
+	    		data[i][0] = "dvokrevetna - jedan ležaj";
+	    	}
+	    	else if (s[0].equals("ONE_ONE")) {
+	    		data[i][0] = "dvokrevetna - dva ležaja";
+	    	}
+	    	else if (s[0].equals("TWO_ONE")) {
+	    		data[i][0] = "trokrevetna";
+	    	}
+	    	else if (s[0].equals("TWO_TWO")) {
+	    		data[i][0] = "četvorokrevetna";
+	    	}
+	    	else {
+	    		data[i][0] = s[0];
+	    	}
+	    	String[] temp = arr2.get(i);
+	    	
+	    	
+	    	if (s[0].equals("ONE") || s[0].equals("ONE_ONE") || s[0].equals("TWO") || s[0].equals("TWO_ONE") || s[0].equals("TWO_TWO")) {
+		    	int j = 1;
+		    	for (String str : temp) {		    		
+		    		data[i][j] = str;	
+		    		j++;
+		    	}
+	    	}
+	    	else {
+	    		data[i][1] = temp[0];
+	    		data[i][2] = temp[0];
+	    		data[i][3] = temp[0];
+	    	}
+	    	i++;	    	
+	    }
+	    
+		final JTable table = new JTable(data, collNames);
+		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.getTableHeader().setReorderingAllowed(false);
+		table.setPreferredScrollableViewportSize(new Dimension(500, 150));
+		table.setFillsViewportHeight(true);
+		
+		tableSorter.setModel((AbstractTableModel) table.getModel());
+		table.setRowSorter(tableSorter);
+		
+		JScrollPane scrollPane = new JScrollPane(table);
+		cenovnik_teble_panel.add(scrollPane);
+	    
+		mainToolbar = new JToolBar();
+		ImageIcon deleteIcon = new ImageIcon("src\\img\\edit.gif");
+		btnEdit_cene.setIcon(deleteIcon);
+		btnEdit_cene.setText("Izmeni cene");
+		mainToolbar.add(btnEdit_cene);		
+		mainToolbar.setFloatable(false);		
+		cenovnik_teble.add(mainToolbar, BorderLayout.NORTH);
+		
+		btnEdit_cene.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {					
+				Izmena_Cena();
+			}
+		});
+		
+	    cenovnik_teble.setVisible(true);
+	}
+	
+	public void Izmena_Cena() {
+		JFrame izmena_cena = new JFrame("Izmena cena");
+		JPanel izmena_cena_panel = new JPanel();		
+		
+		izmena_cena.setSize(400, 400);
+		
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    int x = (int) ((dimension.getWidth() - izmena_cena.getWidth()) / 2);
+	    int y = (int) ((dimension.getHeight() - izmena_cena.getHeight()) / 2);
+	    izmena_cena.setLocation(x, y);
+		
+	    izmena_cena.setTitle("Registracija radnika");
+	    //CLOSING EVENT
+	    izmena_cena.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	    izmena_cena.addWindowListener(new WindowAdapter() {
+	    	@Override
+	    	public void windowClosing(WindowEvent e) {
+	    		int opt = JOptionPane.showConfirmDialog(null, "Do you want to close this window?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			e.getWindow().dispose();
+	    		}
+	    	}
+	    });
+	    izmena_cena.add(izmena_cena_panel);
+		
+		MigLayout ml = new MigLayout("wrap 3", "[][][]", "[]10[]10[]10[]20[]");
+		izmena_cena_panel.setLayout(ml);
+
+		JLabel lbl_jednosobna = new JLabel("jednokrevetna");
+		izmena_cena_panel.add(lbl_jednosobna);
+
+		JTextField txt_jednosobna = new JTextField(20);
+		izmena_cena_panel.add(txt_jednosobna, "span 2");
+
+		JLabel lbl_dvokrevetna = new JLabel("dvokrevetna 1-1");
+		izmena_cena_panel.add(lbl_dvokrevetna);
+
+		JTextField txt_dvokrevetna = new JTextField(20);
+		izmena_cena_panel.add(txt_dvokrevetna, "span 2");
+
+		JLabel lbl_dvokrevetna2 = new JLabel("dvokrevetna 2");
+		izmena_cena_panel.add(lbl_dvokrevetna2);
+
+		JTextField txt_dvokrevetna2 = new JTextField(20);
+		izmena_cena_panel.add(txt_dvokrevetna2, "span 2");
+
+		JLabel lbl_trokrevetna = new JLabel("trokrevetna");
+		izmena_cena_panel.add(lbl_trokrevetna);
+
+		JTextField txt_trokrevetna = new JTextField(20);
+		izmena_cena_panel.add(txt_trokrevetna, "span 2");
+
+		JLabel lbl_cetvorokrevetna = new JLabel("četvorokrevetna");
+		izmena_cena_panel.add(lbl_cetvorokrevetna);
+
+		JTextField txt_cetvorokrevetna = new JTextField(20);
+		izmena_cena_panel.add(txt_cetvorokrevetna, "span 2");
+		
+		JLabel lbl_dorucak = new JLabel("doručak");
+		izmena_cena_panel.add(lbl_dorucak);
+
+		JTextField txt_dorucak = new JTextField(20);
+		izmena_cena_panel.add(txt_dorucak, "span 2");
+		
+		JLabel lbl_rucak = new JLabel("ručak");
+		izmena_cena_panel.add(lbl_rucak);
+
+		JTextField txt_rucak = new JTextField(20);
+		izmena_cena_panel.add(txt_rucak, "span 2");
+		
+		JLabel lbl_vecera = new JLabel("večera");
+		izmena_cena_panel.add(lbl_vecera);
+
+		JTextField txt_vecera = new JTextField(20);
+		izmena_cena_panel.add(txt_vecera, "span 2");
+		
+		JButton btn_izmena = new JButton("Sačuvaj");
+		izmena_cena_panel.add(btn_izmena);
+		
+		btn_izmena.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//DODA NOVI CENOVNIK ISPRED STAROG, RAZDVAJA IH JEDNA PRAZAN RED I TREBA DA DODA U DATUME IZMENE CENVNIKA DATUM IZMENE/VAZENJA
+			}
+		});
+		
+		izmena_cena.add(izmena_cena_panel);
+		izmena_cena.setVisible(true);
 	}
 }

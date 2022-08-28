@@ -3,12 +3,16 @@ package Hotel;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import Users.Soba;
 
@@ -142,6 +146,24 @@ public class Sobe {
 						s.set_cena(Integer.parseInt(item[0]));
 				}
 			}
+		}
+	}
+	
+	public void Rewrite_SobeCSV() {
+		FileWriter writer;
+		try {
+			writer = new FileWriter("src\\Sobe.csv");			
+			writer.write("");
+			writer.close();
+			
+			writer = new FileWriter("src\\Sobe.csv");
+			for (Soba s : getSobe()) {
+				String soba_rewrite = s.get_broj() + "," + s.get_tip() + "," + s.get_broj_ljudi() + "," + s.get_Stanje();
+				writer.write(soba_rewrite + "\n");
+			}
+			writer.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 }
