@@ -1,5 +1,6 @@
 package Users;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -154,176 +155,261 @@ public class Gosti extends Korisnik {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					reservate.dispose();
-
-					reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
-					String line = "";
-					List<String> container = new ArrayList<String>();
-					while ((line = reader.readLine()) != null) {
-						container.add(line);
-					}
-					reader.close();
-
-					FileWriter writer = new FileWriter("src\\Rezervacije.csv", true);
-
 					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy.");
 					LocalDate formatterdtext_converted_to_date_start = LocalDate.parse(txtDate.getText(), formatter);
-					LocalDate formatterdtext_converted_to_date_end = formatterdtext_converted_to_date_start.plusDays(Integer.parseInt(txt_nocenja.getText()));															
-					
-					//DODATI I U ENTITET REZERVACIJE NOVU REZERVACIJU - TREBA IZ CSVA DA PRAVI TABELU?
-					Rezervacije rezervacija = new Rezervacije();				
-					rezervacija.set_pocetak(formatterdtext_converted_to_date_start);
-					rezervacija.set_kraj(formatterdtext_converted_to_date_end);
-					rezervacija.set_username(username);
-//////////////////////////////				
-					reader = new BufferedReader(new FileReader("src\\Sezone.csv"));
-					line = "";
-					List<String[]> sezone = new ArrayList<String[]>();
-					while ((line = reader.readLine()) != null) {
-						sezone.add(line.split(","));
-					}
-					reader.close();								
-					
-					String sezona1 = "";
-					String sezona2 = "";
-					for (String[] sezona : sezone) {
-						String[] temp = sezona[1].split(";");						
-						for (String s : temp) {
-							if (s.equals(formatterdtext_converted_to_date_start.getMonth().toString())) {					
-								sezona1 = sezona[0];					
-								break;
-							}
+					if (formatterdtext_converted_to_date_start.isAfter(LocalDate.now()) || formatterdtext_converted_to_date_start == LocalDate.now()) {
+						reservate.dispose();
+	
+						reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
+						String line = "";
+						List<String> container = new ArrayList<String>();
+						while ((line = reader.readLine()) != null) {
+							container.add(line);
 						}
-						for (String s : temp) {
-							if (s.equals(formatterdtext_converted_to_date_end.getMonth().toString())) {
-								sezona2 = sezona[0];					
-								break;
-							}
-						}
-					}
-					
-					System.out.println("sezona1: " + sezona1);
-					System.out.println("sezona1: " + sezona2);
-					
-					if (txt_br_ljudi.getText().equals("1")) {
-						rezervacija.set_tip(Tip_Soba.ONE);
-					}
-					else if (txt_br_ljudi.getText().equals("2")) {
-						Tip_Soba[] values = { Tip_Soba.ONE_ONE, Tip_Soba.TWO };
-			            int length = values.length;
-			            int randIndex = new Random().nextInt(length);
-			            rezervacija.set_tip(values[randIndex]);
-					}
-					else if (txt_br_ljudi.getText().equals("3")) {
-						rezervacija.set_tip(Tip_Soba.TWO_ONE);
+						reader.close();
+	
+						FileWriter writer = new FileWriter("src\\Rezervacije.csv", true);
+	
+						formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy.");
+						formatterdtext_converted_to_date_start = LocalDate.parse(txtDate.getText(), formatter);
+						LocalDate formatterdtext_converted_to_date_end = formatterdtext_converted_to_date_start.plusDays(Integer.parseInt(txt_nocenja.getText()));															
 						
-					}
-					else if (txt_br_ljudi.getText().equals("4")) {
-						rezervacija.set_tip(Tip_Soba.TWO_TWO);
-					}
-					else {
-						JOptionPane.showMessageDialog(null, "Maksimalan broj ljudi po rezervaciji je 4!\nKreirajte novu rezervaciju za ostatak ljudi.", "InfoBox", JOptionPane.INFORMATION_MESSAGE);
-					}
-					
-					int cena = 0;
-					if (sezona1.equals(sezona2) == false) {
-						LocalDate ld2 = LocalDate.parse("01." + formatterdtext_converted_to_date_end.getMonthValue() + "." +  formatterdtext_converted_to_date_end.getYear() + ".", formatter);
-						long daysBetween = ChronoUnit.DAYS.between(formatterdtext_converted_to_date_start, ld2);
-						System.out.println(daysBetween);
+						//DODATI I U ENTITET REZERVACIJE NOVU REZERVACIJU - TREBA IZ CSVA DA PRAVI TABELU?
+						Rezervacije rezervacija = new Rezervacije();				
+						rezervacija.set_pocetak(formatterdtext_converted_to_date_start);
+						rezervacija.set_kraj(formatterdtext_converted_to_date_end);
+						rezervacija.set_username(username);
+	//////////////////////////////				
+						reader = new BufferedReader(new FileReader("src\\Sezone.csv"));
+						line = "";
+						List<String[]> sezone = new ArrayList<String[]>();
+						while ((line = reader.readLine()) != null) {
+							sezone.add(line.split(","));
+						}
+						reader.close();								
+						
+						String sezona1 = "";
+						String sezona2 = "";
+						for (String[] sezona : sezone) {
+							String[] temp = sezona[1].split(";");						
+							for (String s : temp) {
+								if (s.equals(formatterdtext_converted_to_date_start.getMonth().toString())) {					
+									sezona1 = sezona[0];					
+									break;
+								}
+							}
+							for (String s : temp) {
+								if (s.equals(formatterdtext_converted_to_date_end.getMonth().toString())) {
+									sezona2 = sezona[0];					
+									break;
+								}
+							}
+						}
+						
+						System.out.println("sezona1: " + sezona1);
+						System.out.println("sezona1: " + sezona2);
+						
+						if (txt_br_ljudi.getText().equals("1")) {
+							rezervacija.set_tip(Tip_Soba.ONE);
+						}
+						else if (txt_br_ljudi.getText().equals("2")) {
+							Tip_Soba[] values = { Tip_Soba.ONE_ONE, Tip_Soba.TWO };
+				            int length = values.length;
+				            int randIndex = new Random().nextInt(length);
+				            rezervacija.set_tip(values[randIndex]);
+						}
+						else if (txt_br_ljudi.getText().equals("3")) {
+							rezervacija.set_tip(Tip_Soba.TWO_ONE);
+							
+						}
+						else if (txt_br_ljudi.getText().equals("4")) {
+							rezervacija.set_tip(Tip_Soba.TWO_TWO);
+						}
+						else {
+							JOptionPane.showMessageDialog(null, "Maksimalan broj ljudi po rezervaciji je 4!\nKreirajte novu rezervaciju za ostatak ljudi.", "InfoBox", JOptionPane.INFORMATION_MESSAGE);
+						}
+						
+						int cena = 0;
+						if (sezona1.equals(sezona2) == false) {
+							LocalDate ld2 = LocalDate.parse("01." + formatterdtext_converted_to_date_end.getMonthValue() + "." +  formatterdtext_converted_to_date_end.getYear() + ".", formatter);
+							long daysBetween = ChronoUnit.DAYS.between(formatterdtext_converted_to_date_start, ld2);
+							System.out.println(daysBetween);
+							long daysBetween2 = ChronoUnit.DAYS.between(formatterdtext_converted_to_date_start, formatterdtext_converted_to_date_end);
+							long daysAfter = daysBetween2-daysBetween;
+							System.out.println(daysAfter);
+							
+							reader = new BufferedReader(new FileReader("src\\Cenovnik.csv"));
+							line = "";
+							List<String[]> cenovnik = new ArrayList<String[]>();
+							while ((line = reader.readLine()) != null) {
+								cenovnik.add(line.split(","));
+							}
+							reader.close();											
+							
+							for (String[] s : cenovnik) {
+								String[] temp = s[1].split(";");
+								if (s[0].equals(rezervacija.get_tip().toString())) {					
+									if (sezona1.equals("low")) {
+										cena += Integer.parseInt(temp[0]) * daysBetween;
+									}
+									else if (sezona1.equals("mid")) {
+										cena += Integer.parseInt(temp[2]) * daysBetween;
+									}
+									else if (sezona1.equals("high")) {
+										cena += Integer.parseInt(temp[1]) * daysBetween;
+									}
+									
+									if (sezona2.equals("low")) {
+										cena += Integer.parseInt(temp[0]) * daysAfter;
+									}
+									else if (sezona2.equals("mid")) {
+										cena += Integer.parseInt(temp[2]) * daysAfter;
+									}
+									else if (sezona2.equals("high")) {
+										cena += Integer.parseInt(temp[1]) * daysAfter;
+									}
+								}
+							}
+						}
+						else {
+							reader = new BufferedReader(new FileReader("src\\Cenovnik.csv"));
+							line = "";
+							List<String[]> cenovnik = new ArrayList<String[]>();
+							while ((line = reader.readLine()) != null) {
+								cenovnik.add(line.split(","));
+							}
+							reader.close();
+							
+							long daysBetween2 = ChronoUnit.DAYS.between(formatterdtext_converted_to_date_start, formatterdtext_converted_to_date_end);
+							
+							for (String[] s : cenovnik) {
+								String[] temp = s[1].split(";");							
+								if (s[0].equals(rezervacija.get_tip().toString())) {
+									if (sezona1.equals("low")) {									
+										cena += Integer.parseInt(temp[0]) * daysBetween2;
+									}
+									else if (sezona1.equals("mid")) {
+										cena += Integer.parseInt(temp[2]) * daysBetween2;
+									}
+									else if (sezona1.equals("high")) {
+										cena += Integer.parseInt(temp[1]) * daysBetween2;
+									}
+								}				
+							}
+						}
+						rezervacija.set_cena(cena);
+						System.out.println(cena);
+	////////////////////////////////
+						//DODATNE USLUGE CENA - RADI
 						long daysBetween2 = ChronoUnit.DAYS.between(formatterdtext_converted_to_date_start, formatterdtext_converted_to_date_end);
-						long daysAfter = daysBetween2-daysBetween;
-						System.out.println(daysAfter);
-						
-						reader = new BufferedReader(new FileReader("src\\Cenovnik.csv"));
-						line = "";
-						List<String[]> cenovnik = new ArrayList<String[]>();
-						while ((line = reader.readLine()) != null) {
-							cenovnik.add(line.split(","));
-						}
-						reader.close();											
-						
-						for (String[] s : cenovnik) {
-							String[] temp = s[1].split(";");
-							if (s[0].equals(rezervacija.get_tip().toString())) {					
-								if (sezona1.equals("low")) {
-									cena += Integer.parseInt(temp[0]) * daysBetween;
-								}
-								else if (sezona1.equals("mid")) {
-									cena += Integer.parseInt(temp[2]) * daysBetween;
-								}
-								else if (sezona1.equals("high")) {
-									cena += Integer.parseInt(temp[1]) * daysBetween;
-								}
-								
-								if (sezona2.equals("low")) {
-									cena += Integer.parseInt(temp[0]) * daysAfter;
-								}
-								else if (sezona2.equals("mid")) {
-									cena += Integer.parseInt(temp[2]) * daysAfter;
-								}
-								else if (sezona2.equals("high")) {
-									cena += Integer.parseInt(temp[1]) * daysAfter;
-								}
+						String[] cena_usluge = ispis_rezervacija.split(";");
+						int total_cena = rezervacija.get_cena();
+						for (String item : cena_usluge) {
+							System.out.println(item);
+							if (item.equals("dorucak")) {
+								total_cena += 300 * daysBetween2;
 							}
-						}
-					}
-					else {
-						reader = new BufferedReader(new FileReader("src\\Cenovnik.csv"));
+							else if (item.equals("rucak")) {
+								total_cena += 500 * daysBetween2;
+							}
+							else if (item.equals("vecera")) {
+								total_cena += 400 * daysBetween2;
+							}	
+						}					
+						rezervacija.set_cena(total_cena);
+						
+						rezervacije.add(rezervacija);
+						
+						String ispis = rezervacija.get_pocetak() + "," + rezervacija.get_kraj() + "," + rezervacija.get_tip() + "," + rezervacija.get_username() + "," + Stenje_Rezervacija.NA_CEKANJU + "," + rezervacija.get_cena() + "," + rezervacija.get_id() + "," + ispis_rezervacija + ",n";
+						writer.write(ispis + "\n");
+						writer.close();								
+						
+						//ODUZIMANJE NOVCA OD KORISNIKA I DODAVANJE ADMINU/HOTELU
+						reader = new BufferedReader(new FileReader("src\\Users.csv"));
 						line = "";
-						List<String[]> cenovnik = new ArrayList<String[]>();
+						List<String[]> gosti = new ArrayList<String[]>();
 						while ((line = reader.readLine()) != null) {
-							cenovnik.add(line.split(","));
+							String[] temp = line.split(",");
+							gosti.add(temp);
 						}
 						reader.close();
 						
-						long daysBetween2 = ChronoUnit.DAYS.between(formatterdtext_converted_to_date_start, formatterdtext_converted_to_date_end);
+						Integer budzet_gosta = 0;
+						Integer adminov_budzet = 0;
+						for (String[] s : gosti) {
+							if (s[2].equals("a")) {
+								adminov_budzet = Integer.parseInt(s[9]);							
+							}
+							else if (s[0].equals(username)) {
+								budzet_gosta = Integer.parseInt(s[9]);
+								budzet_gosta -= total_cena;
+								s[9] = budzet_gosta.toString();
+							}
+						}
 						
-						for (String[] s : cenovnik) {
-							String[] temp = s[1].split(";");							
-							if (s[0].equals(rezervacija.get_tip().toString())) {
-								if (sezona1.equals("low")) {									
-									cena += Integer.parseInt(temp[0]) * daysBetween2;
-								}
-								else if (sezona1.equals("mid")) {
-									cena += Integer.parseInt(temp[2]) * daysBetween2;
-								}
-								else if (sezona1.equals("high")) {
-									cena += Integer.parseInt(temp[1]) * daysBetween2;
-								}
-							}				
+						adminov_budzet += total_cena;
+						
+						for (String[] s : gosti) {
+							if (s[2].equals("a")) {
+								s[9] = adminov_budzet.toString();
+								break;
+							}
 						}
+						
+						writer = new FileWriter("src\\Users.csv");
+						writer.write("");
+						writer.close();
+						
+						writer = new FileWriter("src\\Users.csv");
+						for (String[] s : gosti) {
+							ispis = "";
+							for (String str : s) {
+								ispis += str + ",";
+							}
+							ispis = ispis.substring(0, ispis.length() - 1);
+							writer.write(ispis + "\n");
+						}
+						writer.close();		
+						
+						//UPISUJE U CSV PRIHOD RASHOD
+						reader = new BufferedReader(new FileReader("src\\Prihodi_Rashodi.csv"));
+						
+						line = "";
+						List<String[]> prihodi_rashodi = new ArrayList<String[]>();
+						while ((line = reader.readLine()) != null) {
+							String[] temp = line.split(",");
+							prihodi_rashodi.add(temp);
+						}
+						reader.close();
+						
+						Integer total_cena2 = total_cena;
+						String danas = LocalDate.now().toString();
+						String[] temp = { danas, total_cena2.toString(), "prihod" };
+						prihodi_rashodi.add(temp);
+						
+						writer = new FileWriter("src\\Prihodi_Rashodi.csv");
+						writer.write("");
+						writer.close();
+						
+						writer = new FileWriter("src\\Prihodi_Rashodi.csv");
+						for (String[] s : prihodi_rashodi) {
+							ispis = "";
+							for (String str : s) {
+								ispis += str + ",";
+							}
+							ispis = ispis.substring(0, ispis.length() - 1);
+							writer.write(ispis + "\n");
+						}
+						writer.close();
+						
+						JOptionPane.showMessageDialog(null, "Uspesno kreirana rezervacija!", "InfoBox: " + "Reservation creation", JOptionPane.INFORMATION_MESSAGE);
+						
+						// nece trebati ovde ali za sad nemam gde da ga premestim
+						//reservate_tabela(txtDate, txt_nocenja);
 					}
-					rezervacija.set_cena(cena);
-					System.out.println(cena);
-////////////////////////////////
-					//DODATNE USLUGE CENA - RADI
-					long daysBetween2 = ChronoUnit.DAYS.between(formatterdtext_converted_to_date_start, formatterdtext_converted_to_date_end);
-					String[] cena_usluge = ispis_rezervacija.split(";");
-					int total_cena = rezervacija.get_cena();
-					for (String item : cena_usluge) {
-						System.out.println(item);
-						if (item.equals("dorucak")) {
-							total_cena += 300 * daysBetween2;
-						}
-						else if (item.equals("rucak")) {
-							total_cena += 500 * daysBetween2;
-						}
-						else if (item.equals("vecera")) {
-							total_cena += 400 * daysBetween2;
-						}	
-					}					
-					rezervacija.set_cena(total_cena);
-					
-					rezervacije.add(rezervacija);
-					
-					String ispis = rezervacija.get_pocetak() + "," + rezervacija.get_kraj() + "," + rezervacija.get_tip() + "," + rezervacija.get_username() + "," + Stenje_Rezervacija.NA_CEKANJU + "," + rezervacija.get_cena() + "," + rezervacija.get_id() + "," + ispis_rezervacija + ",n";
-					writer.write(ispis + "\n");
-					writer.close();								
-					
-					JOptionPane.showMessageDialog(null, "Uspesno kreirana rezervacija!", "InfoBox: " + "Reservation creation", JOptionPane.INFORMATION_MESSAGE);
-					
-					// nece trebati ovde ali za sad nemam gde da ga premestim
-					//reservate_tabela(txtDate, txt_nocenja);
+					else {
+						JOptionPane.showMessageDialog(null, "Datum ne sme biti u proslosti!", "InfoBox: " + "greska", JOptionPane.INFORMATION_MESSAGE);
+					}
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -332,7 +418,7 @@ public class Gosti extends Korisnik {
 		
 		reservate.add(reservate_panel);
 		reservate.setVisible(true);
-	}	
+	}
 	
 	public void PregledRezervacija(final String username) throws IOException {
 		pregled = new JFrame("Pregled rezervacija");
@@ -405,7 +491,73 @@ public class Gosti extends Korisnik {
 		JScrollPane scrollPane = new JScrollPane(table);
 		pregled_panel.add(scrollPane);
 
+		JButton btn_otkazi = new JButton("Otkaži rezervaciju");
+		pregled_panel.add(btn_otkazi, BorderLayout.SOUTH);
+		
+		btn_otkazi.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {					
+				try {
+					int red = table.getSelectedRow();
+					if(red == -1) {
+						JOptionPane.showMessageDialog(null, "Morate odabrati red u tabeli.", "Greska", JOptionPane.WARNING_MESSAGE);
+					}
+					else {	
+						Otkazi(red, table, username);
+						pregled.dispose();
+					}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
 		pregled.add(pregled_panel);
 		pregled.setVisible(true);
+	}
+	
+	public void Otkazi(int red, JTable table, String username) throws IOException {		
+		if(red == -1) {
+			JOptionPane.showMessageDialog(null, "Morate odabrati red u tabeli.", "Greska", JOptionPane.WARNING_MESSAGE);
+		}
+		else {
+			String id_rez = table.getValueAt(red, 0).toString();			
+			
+			reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
+			String line = "";
+			List<String[]> rezervacije_csv = new ArrayList<String[]>();
+			while ((line = reader.readLine()) != null) {
+				String[] temp = line.split(",");
+				rezervacije_csv.add(temp);
+			}
+			reader.close();
+			
+			System.out.println(id_rez + " " + username);
+			for (String[] s : rezervacije_csv) {
+				System.out.println(s[6] + " " + s[3]);
+				if (s[6].equals(id_rez) && s[3].equals(username)) {
+					s[4] = "OTKAZANA";
+				}
+			}
+			
+			FileWriter writer;
+			writer = new FileWriter("src\\Rezervacije.csv");
+			writer.write("");
+			writer.close();
+			
+			writer = new FileWriter("src\\Rezervacije.csv");
+			for (String[] s : rezervacije_csv) {
+				String ispis = "";
+				for (String str : s) {
+					ispis += str + ",";
+				}
+				ispis = ispis.substring(0, ispis.length() - 1);
+				writer.write(ispis + "\n");
+			}
+			writer.close();
+			
+			JOptionPane.showMessageDialog(null, "Uspešno otkazana rezervacija!", "InfoBox", JOptionPane.INFORMATION_MESSAGE);			
+		}
 	}
 }

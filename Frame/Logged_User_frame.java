@@ -81,19 +81,22 @@ public class Logged_User_frame {
 
 			JMenu zaposleniMenu = new JMenu("Meni za zaposlene");
 			JMenuItem dodajZaposlenogItem = new JMenuItem("Dodaj zaposlenog");
-			JMenuItem otherItem = new JMenuItem("TO DO");
 
 			zaposleniMenu.add(dodajZaposlenogItem);
-			zaposleniMenu.add(otherItem);
 
 			mainMenuAdmin.add(zaposleniMenu);
 			
 			JMenu prikazEntitetaMenu = new JMenu("Meni za prikaz entiteta");
 			JMenuItem prikazEntitetaItem = new JMenuItem("Prikazi tabelu entiteta");
-			JMenuItem prikazCenaItem = new JMenuItem("Prikazi tabelu cena");
+			JMenuItem prikazCenaItem = new JMenuItem("Prikazi tabelu cena");			
 			prikazEntitetaMenu.add(prikazEntitetaItem);
 			prikazEntitetaMenu.add(prikazCenaItem);
 			mainMenuAdmin.add(prikazEntitetaMenu);
+			
+			JMenu prikazPrihodaRashodaMenu = new JMenu("Meni za prikaz prihoda i rashoda");
+			JMenuItem prikazPrihodRashodaItem = new JMenuItem("Tabela prihoda i rashoda");
+			prikazPrihodaRashodaMenu.add(prikazPrihodRashodaItem);
+			mainMenuAdmin.add(prikazPrihodaRashodaMenu);
 			
 			frame.setJMenuBar(mainMenuAdmin);
 			
@@ -130,22 +133,62 @@ public class Logged_User_frame {
 						}
 		           }
 		    	});
+			
+			prikazPrihodRashodaItem.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+		        		    admin.Prihod_Rashod();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		           }
+		    	});
 		}
 		else if(position.equals("r")) {
 			frame.setTitle("Recepcionist manager");
 			
+			//OPTION MENU ZA ADMINA
+			JMenuBar mainMenuRecepcioner = new JMenuBar();
+
+			JMenu gostiMenu = new JMenu("Gosti");
+			JMenu sobeMenu = new JMenu("Sobe");
+			JMenu rezervacijeMenu = new JMenu("Rezervacije");
+
+			JMenuItem dodajGostaItem = new JMenuItem("Dodaj gosta");
+			JMenuItem regulisiRezervacijeItem = new JMenuItem("Reguliši rezervacije");
+			JMenuItem listaGostijuItem = new JMenuItem("Lista gostiju");
+			JMenuItem pregledRezervacijaItem = new JMenuItem("Pregled rezervacija");
+			JMenuItem potvrdjeneRezervacijeItem = new JMenuItem("Potvrđene rezervacije");
+			JMenuItem pregledSobaItem = new JMenuItem("Pregled soba");
+			JMenuItem zauzeteSobeItem = new JMenuItem("Zauzete sobe");
+
+			gostiMenu.add(dodajGostaItem);
+			gostiMenu.add(listaGostijuItem);
+			mainMenuRecepcioner.add(gostiMenu);
+
+			sobeMenu.add(pregledSobaItem);
+			sobeMenu.add(zauzeteSobeItem);			
+			mainMenuRecepcioner.add(sobeMenu);
+
+			rezervacijeMenu.add(regulisiRezervacijeItem);
+			rezervacijeMenu.add(pregledRezervacijaItem);
+			rezervacijeMenu.add(potvrdjeneRezervacijeItem);			
+			mainMenuRecepcioner.add(rezervacijeMenu);
+			
+			frame.setJMenuBar(mainMenuRecepcioner);
+			
 			final Recepcioner recepcioner = new Recepcioner();
-			btn_dodaj_gosta = new JButton("Dodaj gosta");
-			btn_dodaj_gosta.addActionListener(new ActionListener() {
+			//btn_dodaj_gosta = new JButton("Dodaj gosta");
+			dodajGostaItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   recepcioner.RegisterGuest();
 		           }
 		    	});
-			panel.add(btn_dodaj_gosta);
+			//panel.add(btn_dodaj_gosta);
 			
 			//ne treba da bude button? msm da treba samo da se pozove nakon registracije?
-			btn_check_in = new JButton("Regulisi rezervacije");
-			btn_check_in.addActionListener(new ActionListener() {
+			//btn_check_in = new JButton("Regulisi rezervacije");
+			regulisiRezervacijeItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {
 		        	   try {
 						recepcioner.RegulisiRezervaciju();
@@ -155,10 +198,10 @@ public class Logged_User_frame {
 					}
 		           }
 		    	});
-			panel.add(btn_check_in);
+			//panel.add(btn_check_in);
 			
-			btn_lista_gostiju = new JButton("Lista gostiju");
-			btn_lista_gostiju.addActionListener(new ActionListener() {
+			//btn_lista_gostiju = new JButton("Lista gostiju");
+			listaGostijuItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
 						recepcioner.Guest_List();
@@ -167,10 +210,10 @@ public class Logged_User_frame {
 						}
 		           }
 		    	});
-			panel.add(btn_lista_gostiju);
+			//panel.add(btn_lista_gostiju);
 			
-			btn_pregled_rez = new JButton("Pregled rezervacija");
-			btn_pregled_rez.addActionListener(new ActionListener() {
+			//btn_pregled_rez = new JButton("Pregled rezervacija");
+			pregledRezervacijaItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
 						recepcioner.Pregled_Rezervacija();
@@ -179,10 +222,10 @@ public class Logged_User_frame {
 						}
 		           }
 		    	});
-			panel.add(btn_pregled_rez);
+			//panel.add(btn_pregled_rez);
 			
-			btn_potvrdjene_rez = new JButton("Potvrdjene rezervacije");
-			btn_potvrdjene_rez.addActionListener(new ActionListener() {
+			//btn_potvrdjene_rez = new JButton("Potvrdjene rezervacije");
+			potvrdjeneRezervacijeItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
 						recepcioner.Check_In();
@@ -191,10 +234,10 @@ public class Logged_User_frame {
 						}
 		           }
 		    	});
-			panel.add(btn_potvrdjene_rez);
+			//panel.add(btn_potvrdjene_rez);
 			
-			btn_pregled_soba = new JButton("Pregled soba");
-			btn_pregled_soba.addActionListener(new ActionListener() {
+			//btn_pregled_soba = new JButton("Pregled soba");
+			pregledSobaItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
 						recepcioner.Pregled_Soba();
@@ -203,10 +246,10 @@ public class Logged_User_frame {
 						}
 		           }
 		    	});
-			panel.add(btn_pregled_soba);
+			//panel.add(btn_pregled_soba);
 			
-			btn_check_out = new JButton("Zauzete sobe");
-			btn_check_out.addActionListener(new ActionListener() {
+			//btn_check_out = new JButton("Zauzete sobe");
+			zauzeteSobeItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
 						recepcioner.Check_Out();
@@ -215,7 +258,10 @@ public class Logged_User_frame {
 						}
 		           }
 		    	});
-			panel.add(btn_check_out);
+			//panel.add(btn_check_out);
+			
+			JLabel recepcioner_info = new JLabel("Username: " + username + "\nPozicija: recepcioner");
+			panel.add(recepcioner_info);
 		}
 		else if(position.equals("s")) {
 			frame.setTitle("Maid manager");
@@ -235,17 +281,31 @@ public class Logged_User_frame {
 		}
 		else {
 			frame.setTitle("Guest manager");
+			
+			JMenuBar mainMenuRecepcioner = new JMenuBar();
+			
+			JMenu rezervacijeMenu = new JMenu("Rezervacije");
+
+			JMenuItem rezervisiItem = new JMenuItem("Napravi rezervaciju");
+			JMenuItem pregled_rezItem = new JMenuItem("Pregled odobrenih");
+
+			rezervacijeMenu.add(rezervisiItem);
+			rezervacijeMenu.add(pregled_rezItem);
+			mainMenuRecepcioner.add(rezervacijeMenu);
+			
+			frame.setJMenuBar(mainMenuRecepcioner);
+			
 			final Gosti gost = new Gosti();
-			btn_dodaj_rez = new JButton("Napravi rezervaciju");
-			btn_dodaj_rez.addActionListener(new ActionListener() {
+			//btn_dodaj_rez = new JButton("Napravi rezervaciju");
+			rezervisiItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   gost.ZahtevRezervacija(username);
 		           }
 		    	});
-			panel.add(btn_dodaj_rez);
+			//panel.add(btn_dodaj_rez);
 
-			btn_pregled_rez = new JButton("Pregled rezervacija");
-			btn_pregled_rez.addActionListener(new ActionListener() {
+			//btn_pregled_rez = new JButton("Pregled rezervacija");
+			pregled_rezItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
 						gost.PregledRezervacija(username);
@@ -254,8 +314,11 @@ public class Logged_User_frame {
 					}
 		           }
 		    	});
-			panel.add(btn_pregled_rez);
+			//panel.add(btn_pregled_rez);
+			JLabel gost_info = new JLabel("Username: " + username + "\nPozicija: gost");
+			panel.add(gost_info);
 		}
+		
 		frame.setVisible(true);
 	}
 }

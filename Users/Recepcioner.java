@@ -103,7 +103,7 @@ public class Recepcioner extends Zaposleni {
 	
 	JFrame dodela_sobarica;
 	JPanel dodela_sobarica_panel;
-	
+		
 	//metode
 	public void RegisterGuest() { //e novog gosta - registracija 
 		dialog = new JDialog();
@@ -742,7 +742,7 @@ public class Recepcioner extends Zaposleni {
 						//PUNI NOVIM INFORMACIJAMA
 						writer = new FileWriter("src\\Rezervacije.csv", true);
 						for (String[] temp : rezervacije_csv) {
-							String ispis = temp[0] + "," + temp[1] + "," + temp[2] + "," + temp[3] + "," + temp[4] + "," + temp[5] + "," + temp[6] + "," + temp[7] + "\n";							
+							String ispis = temp[0] + "," + temp[1] + "," + temp[2] + "," + temp[3] + "," + temp[4] + "," + temp[5] + "," + temp[6] + "," + temp[7] + "," + temp[8] + "\n";							
 							writer.write(ispis);
 						}
 						writer.close();
@@ -757,17 +757,21 @@ public class Recepcioner extends Zaposleni {
             }
         });
 		
-		btn_odbij.addActionListener(new ActionListener() {
+		btn_odbij.addActionListener(new ActionListener() { //MORAM DODATI JOS I ZA NOVAC OD GOSTA/ADMINA-HOTELA
             public void actionPerformed(ActionEvent e) {
             	int red = table.getSelectedRow();
 				if(red == -1) {
 					JOptionPane.showMessageDialog(null, "Morate odabrati red u tabeli.", "Greska", JOptionPane.WARNING_MESSAGE);
 				}
 				else {
+					String ime_gosta = "";
+					Integer pare_nazad = 0;
 					String entitet_za_odbijanje = table.getValueAt(red, 0).toString();
 					for(String[] r : rezervacije_csv) {
 						if (r[6].equals(entitet_za_odbijanje)) {
 							r[4] = "ODBIJENA";
+							ime_gosta = r[3];
+							pare_nazad = Integer.parseInt(r[5]); 
 							break;
 						}
 					}
@@ -781,7 +785,7 @@ public class Recepcioner extends Zaposleni {
 						//PUNI NOVIM INFORMACIJAMA
 						writer = new FileWriter("src\\Rezervacije.csv", true);
 						for (String[] temp : rezervacije_csv) {
-							String ispis = temp[0] + "," + temp[1] + "," + temp[2] + "," + temp[3] + "," + temp[4] + "," + temp[5] + "," + temp[6] + "," + temp[7] + "\n";
+							String ispis = temp[0] + "," + temp[1] + "," + temp[2] + "," + temp[3] + "," + temp[4] + "," + temp[5] + "," + temp[6] + "," + temp[7] + "," + temp[8] + "\n";
 							writer.write(ispis);
 						}
 						writer.close();
@@ -792,6 +796,94 @@ public class Recepcioner extends Zaposleni {
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
+					
+					//GOSTU CIJA JE BILA REZRVACIJA VRACA PARE NAZAD
+					try {
+						reader = new BufferedReader(new FileReader("src\\Users.csv"));
+						
+						String line = "";
+						List<String[]> gosti = new ArrayList<String[]>();
+						while ((line = reader.readLine()) != null) {
+							String[] temp = line.split(",");
+							gosti.add(temp);
+						}
+						reader.close();
+						
+						Integer budzet_gosta = 0;
+						Integer adminov_budzet = 0;
+						for (String[] s : gosti) {
+							if (s[2].equals("a")) {
+								adminov_budzet = Integer.parseInt(s[9]);							
+							}
+							else if (s[0].equals(ime_gosta)) {
+								budzet_gosta = Integer.parseInt(s[9]);
+								budzet_gosta += pare_nazad;
+								s[9] = budzet_gosta.toString();
+							}
+						}
+						
+						adminov_budzet -= pare_nazad;
+						
+						for (String[] s : gosti) {
+							if (s[2].equals("a")) {
+								s[9] = adminov_budzet.toString();
+								break;
+							}
+						}
+						
+						writer = new FileWriter("src\\Users.csv");
+						writer.write("");
+						writer.close();
+						
+						writer = new FileWriter("src\\Users.csv");
+						for (String[] s : gosti) {
+							String ispis = "";
+							for (String str : s) {
+								ispis += str + ",";
+							}
+							ispis = ispis.substring(0, ispis.length() - 1);
+							writer.write(ispis + "\n");
+						}
+						writer.close();
+						
+						//UPISUJE U CSV PRIHOD RASHOD
+						reader = new BufferedReader(new FileReader("src\\Prihodi_Rashodi.csv"));
+						
+						line = "";
+						List<String[]> prihodi_rashodi = new ArrayList<String[]>();
+						while ((line = reader.readLine()) != null) {
+							String[] temp = line.split(",");
+							prihodi_rashodi.add(temp);
+						}
+						reader.close();
+						
+						String danas = LocalDate.now().toString();
+						String[] temp = { danas, pare_nazad.toString(), "rashod" };
+						prihodi_rashodi.add(temp);
+						
+						writer = new FileWriter("src\\Prihodi_Rashodi.csv");
+						writer.write("");
+						writer.close();
+						
+						writer = new FileWriter("src\\Prihodi_Rashodi.csv");
+						for (String[] s : prihodi_rashodi) {
+							String ispis = "";
+							for (String str : s) {
+								ispis += str + ",";
+							}
+							ispis = ispis.substring(0, ispis.length() - 1);
+							writer.write(ispis + "\n");
+						}
+						writer.close();
+						
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
 				}
             }
         });
@@ -1135,7 +1227,7 @@ public class Recepcioner extends Zaposleni {
 					JOptionPane.showMessageDialog(null, "Morate odabrati red u tabeli.", "Greska", JOptionPane.WARNING_MESSAGE);
 				}
 				else {
-					String broj_sobe = table.getValueAt(red, 0).toString();					
+					String broj_sobe = table.getValueAt(red, 0).toString();				
 				    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy.");
 				    date_za_brisanje = LocalDate.parse(txtDate.getText(), formatter);
 					System.out.println(date_za_brisanje);
