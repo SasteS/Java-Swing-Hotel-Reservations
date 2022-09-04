@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,8 @@ public class Sobarica extends Zaposleni {
 		protected TableRowSorter<AbstractTableModel> tableSorter = new TableRowSorter<AbstractTableModel>();		
 		protected JFrame tabela_soba;
 		protected JPanel tabela_soba_panel;
+		
+		private String user;
 		
 	public void Sobe_Za_Ciscenje(final String username) throws IOException {
 		this.username = username;
@@ -115,6 +118,7 @@ public class Sobarica extends Zaposleni {
 		
 		JButton btn_oslobodi_sobu = new JButton("Oslobodi sobu");
 		tabela_soba_panel.add(btn_oslobodi_sobu);
+		user = this.username;
 		btn_oslobodi_sobu.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {            
@@ -188,14 +192,18 @@ public class Sobarica extends Zaposleni {
 								ispis += "\n";
 							}
 							else {
-								ispis += temp + ",";	
+								ispis += temp + ",";
 							}
 						}
+						
+						//PUNI CVS SA DATUMOM KAD JE SOBA OCISCENA I IME SOBARICE						
+						writer = new FileWriter("src\\Sobarice_Datumi_Ciscenja.csv", true);						
+						ispis = user + "," + LocalDate.now().toString() + "\n";
 						
 						System.out.println(ispis);
 						writer.write(ispis);
 						writer.close();
-						JOptionPane.showMessageDialog(null, "Morate odabrati red u tabeli.", "Info", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Soba očišćena.", "Info", JOptionPane.INFORMATION_MESSAGE);
 						tabela_soba.dispose();
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();

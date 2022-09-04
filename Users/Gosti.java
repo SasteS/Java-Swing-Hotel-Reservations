@@ -60,7 +60,7 @@ public class Gosti extends Korisnik {
 	JPanel pregled_panel;
 	
 	// metode
-	public void ZahtevRezervacija(final String username) { // pravi zahtev za rezervaciju koji ce kasnije recepcioner da
+	public void ZahtevRezervacija(final String username) throws IOException { // pravi zahtev za rezervaciju koji ce kasnije recepcioner da
 															// odobri/odbije
 		reservate = new JFrame("Check in");
 		reservate_panel = new JPanel(new MigLayout("wrap, insets 20, fill", "[center]20[center]",
@@ -119,9 +119,24 @@ public class Gosti extends Korisnik {
 		lbl_dodatne_opc.setBounds(10, 20, 80, 25);
 		reservate_panel.add(lbl_dodatne_opc);
 
-		String[] opcije = { "dorucak", "rucak", "vecera" };
-		final JList list_dodatne_opc = new JList(opcije);
-		list_dodatne_opc.setVisibleRowCount(3);
+		//DODATNE OPCIJE
+		List<String> opcije = new ArrayList<String>();
+		reader = new BufferedReader(new FileReader("src\\Dodatni_Kriterijumi.csv"));
+		String line = "";
+		while ((line = reader.readLine()) != null) {
+			opcije.add(line);
+		}
+		reader.close();
+		
+		String[] opcije_niz = new String[opcije.size()];
+		int index = 0;
+		for (String opcija : opcije) {
+			opcije_niz[index] = opcija;
+			index++;
+		}
+		
+		final JList list_dodatne_opc = new JList(opcije_niz);
+		list_dodatne_opc.setVisibleRowCount(opcije_niz.length);
 		JScrollPane sp = new JScrollPane(list_dodatne_opc);
 		reservate_panel.add(sp, "wrap, left");
 
@@ -314,8 +329,23 @@ public class Gosti extends Korisnik {
 							}
 							else if (item.equals("vecera")) {
 								total_cena += 400 * daysBetween2;
-							}	
-						}					
+							}
+							else if (item.equals("klima uređaj")) {
+								total_cena += 200 * daysBetween2;
+							}
+							else if (item.equals("balkon")) {
+								total_cena += 500 * daysBetween2;
+							}
+							else if (item.equals("tv")) {
+								total_cena += 100 * daysBetween2;
+							}
+							else if (item.equals("pušačka soba")) {
+								total_cena += 100 * daysBetween2;
+							}
+							else if (item.equals("nepušačka soba")) {
+								total_cena += 100 * daysBetween2;
+							}
+						}
 						rezervacija.set_cena(total_cena);
 						
 						rezervacije.add(rezervacija);
@@ -400,7 +430,7 @@ public class Gosti extends Korisnik {
 							ispis = ispis.substring(0, ispis.length() - 1);
 							writer.write(ispis + "\n");
 						}
-						writer.close();
+						writer.close();											
 						
 						JOptionPane.showMessageDialog(null, "Uspesno kreirana rezervacija!", "InfoBox: " + "Reservation creation", JOptionPane.INFORMATION_MESSAGE);
 						
@@ -557,7 +587,89 @@ public class Gosti extends Korisnik {
 			}
 			writer.close();
 			
+			//DODAJE U CSV SA DATUMIMA ZA KASNIJE PREGLED KOD ADMINA
+			writer = new FileWriter("src\\Gosti_Datumi_Otkazivanja.csv",true);
+			String ispis = LocalDate.now().toString() + "\n";
+			writer.write(ispis);
+			writer.close();
+			
 			JOptionPane.showMessageDialog(null, "Uspešno otkazana rezervacija!", "InfoBox", JOptionPane.INFORMATION_MESSAGE);			
 		}
+	}
+	
+	public void Pregled_Svih_Rezervacija(String username) throws IOException {		
+		JFrame pregled_svih = new JFrame("Pregled rezervacija");
+		JPanel pregled_svih_panel = new JPanel();
+
+		pregled_svih.setSize(650, 500);
+
+		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+		final int x = (int) ((dimension.getWidth() - pregled_svih.getWidth()) / 2);
+		final int y = (int) ((dimension.getHeight() - pregled_svih.getHeight()) / 2);
+		pregled_svih.setLocation(x, y);
+
+		// CLOSING EVENT
+		pregled_svih.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		pregled_svih.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				int opt = JOptionPane.showConfirmDialog(null, "Do you want to close the window?", "close",
+						JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				if (opt == JOptionPane.YES_OPTION) {
+					e.getWindow().dispose();
+				}
+			}
+		});
+		
+		reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
+		String line = "";
+		List<String[]> rezervacije_csv = new ArrayList<String[]>();
+		while ((line = reader.readLine()) != null) {
+			String[] temp = line.split(",");
+			if (temp[3].equals(username)) {
+				rezervacije_csv.add(temp);
+			}
+		}
+		reader.close();
+		
+		String[] collNames = { "ID", "Pocetni datum", "Krajnji datum", "Tip sobe", "Gost", "Cena", "Stanje" };
+		Object[][] data = new Object[rezervacije_csv.size()][7];		
+		
+		Integer ukupan_trosak = 0;
+		int i = 0;		
+		for (String[] r : rezervacije_csv) {
+			data[i][0] = r[6];
+			data[i][1] = r[0];
+			data[i][2] = r[1];
+			data[i][3] = r[2];
+			data[i][4] = r[3];
+			if (r[4].equals("ODBIJENA")) {
+				data[i][5] = "0";			
+			}
+			else {
+				data[i][5] = r[5];
+				ukupan_trosak += Integer.parseInt(r[5]);
+			}
+			data[i][6] = r[4];			
+			i++;
+		}
+		
+		final JTable table = new JTable(data, collNames);
+		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.getTableHeader().setReorderingAllowed(false);
+		table.setPreferredScrollableViewportSize(new Dimension(500, 150));
+		table.setFillsViewportHeight(true);
+
+		tableSorter.setModel((AbstractTableModel) table.getModel());
+		table.setRowSorter(tableSorter);
+
+		JScrollPane scrollPane = new JScrollPane(table);
+		pregled_svih_panel.add(scrollPane);
+		
+		JLabel lbl_ukupan_trosak = new JLabel("Ukupan trošak: " + ukupan_trosak.toString());
+		pregled_svih_panel.add(lbl_ukupan_trosak);
+		
+		pregled_svih.add(pregled_svih_panel);
+		pregled_svih.setVisible(true);
 	}
 }

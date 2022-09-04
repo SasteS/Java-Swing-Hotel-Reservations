@@ -1,7 +1,9 @@
 package Users;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,11 +14,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,9 +40,20 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
+
+import org.knowm.xchart.BubbleChart;
+import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.XChartPanel;
+import org.knowm.xchart.XYChart;
+import org.knowm.xchart.XYChartBuilder;
+import org.knowm.xchart.XYSeries.XYSeriesRenderStyle;
+import org.knowm.xchart.style.Styler.LegendPosition;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import net.miginfocom.swing.MigLayout;
@@ -91,7 +106,7 @@ public class Admin extends Korisnik {
 	protected JButton btnEdit = new JButton();
 	protected JButton btnDelete = new JButton();
 	protected JButton btnEdit_user = new JButton();
-	protected JTextField tfSearch = new JTextField(20);
+	
 	protected JTable table;
 	protected TableRowSorter<AbstractTableModel> tableSorter = new TableRowSorter<AbstractTableModel>();
     
@@ -113,6 +128,25 @@ public class Admin extends Korisnik {
 	protected List<Zaposleni> recepcioneri = new ArrayList<Zaposleni>();
 	protected List<Zaposleni> sobarice = new ArrayList<Zaposleni>();
 	List<String[]> all_users = new ArrayList<String[]>();
+	
+	JFrame filter_dates = new JFrame();
+	JPanel filter_dates_panel = new JPanel();
+	JLabel prihod_lbl;
+	JLabel rashod_lbl;	
+	
+	JFrame spremljene_sobe;
+	JPanel spremljene_sobe_panel;
+	JFormattedTextField txtDate_prvi;
+	JFormattedTextField txtDate_drugi;
+	
+	JFrame odobrene_rez;
+	JPanel odobrene_rez_panel;
+	JLabel broj_odobrenih_lbl;
+	JLabel broj_odbijenih_lbl;
+	JLabel broj_otkazanih_lbl;
+		
+	JFrame sobe_datumi;
+	JPanel sobe_datumi_panel;
 	
 	public Admin() throws IOException {
 		Ucitaj_Zaposlene();
@@ -1084,7 +1118,7 @@ public class Admin extends Korisnik {
 		JFrame prihod_rashod = new JFrame();
 		JPanel prihod_rashod_panel = new JPanel();
     	
-		prihod_rashod.setSize(700, 300);
+		prihod_rashod.setSize(700, 850);
     	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 	    final int x = (int) ((dimension.getWidth() - prihod_rashod.getWidth()) / 2);
 	    final int y = (int) ((dimension.getHeight() - prihod_rashod.getHeight()) / 2);
@@ -1104,7 +1138,7 @@ public class Admin extends Korisnik {
 		prihod_rashod.add(prihod_rashod_panel);
 		
 		BufferedReader reader = new BufferedReader(new FileReader("src\\Prihodi_Rashodi.csv"));
-		List<String[]> arr = new ArrayList<String[]>();
+		final List<String[]> arr = new ArrayList<String[]>();
 		String line = "";
 		int lines = 0;
 		while((line = reader.readLine()) != null) {
@@ -1136,8 +1170,563 @@ public class Admin extends Korisnik {
 		JScrollPane scrollPane = new JScrollPane(table);
 		prihod_rashod_panel.add(scrollPane);
 		
-		prihod_rashod.setVisible(true);
+		JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.CENTER));		
+		pSearch.setBackground(Color.LIGHT_GRAY);
 		
-		//DODATI ONAJ KAO SEARCH BAR GDE MOZE OD date DO date DA PRIKAZE
+		prihod_rashod.add(pSearch, BorderLayout.SOUTH);
+		
+		JButton btn_filter = new JButton("Filter");
+		pSearch.add(btn_filter);
+		
+		btn_filter.addActionListener(new ActionListener() { 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Filter_Po_Datumima(arr);
+			}
+		});		
+		
+		XYChart chart = getChart();
+		//new SwingWrapper<XYChart>(chart).displayChart();
+		JPanel chartPanel = new XChartPanel(chart);
+		prihod_rashod.add(chartPanel, BorderLayout.SOUTH);
+		
+		prihod_rashod.setVisible(true);
+	}
+	
+	public XYChart getChart() {
+ 
+	    // Create Chart
+	    XYChart chart = new XYChartBuilder().width(800).height(600).title(getClass().getSimpleName()).xAxisTitle("X").yAxisTitle("Y").build();
+	 
+	    // Customize Chart
+	    chart.getStyler().setLegendPosition(LegendPosition.InsideNE);
+	    chart.getStyler().setChartTitleVisible(false);
+	    chart.getStyler().setAxisTitlesVisible(false);
+	    //chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);
+	 
+	    Date[] xData = {Date.valueOf("11-11-2022"), Date.valueOf("11-11-2022"), Date.valueOf("11-11-2022")};
+	    int[] yData = { 1, 2, 3, 4, 5 };
+	    
+	    // Series
+	    //chart.addSeries("a", xData, yData);
+	    //chart.addSeries("b", xData, yData);
+	    //chart.addSeries("c", xData, yData);
+	 
+	    return chart;
+	}
+	
+	public void Filter_Po_Datumima(final List<String[]> arr) {
+		filter_dates = new JFrame();
+		filter_dates_panel = new JPanel();
+		
+		filter_dates.setSize(700, 300);
+    	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    final int x = (int) ((dimension.getWidth() - filter_dates.getWidth()) / 2);
+	    final int y = (int) ((dimension.getHeight() - filter_dates.getHeight()) / 2);
+	    filter_dates.setLocation(x, y);
+	    
+	    filter_dates.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		filter_dates.addWindowListener(new WindowAdapter() {
+	    	@Override
+	    	public void windowClosing(WindowEvent e) {
+	    		int opt = JOptionPane.showConfirmDialog(null, "Do you want to close this window?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			e.getWindow().dispose();
+	    		}
+	    	}
+	    });
+		
+		filter_dates.add(filter_dates_panel);
+		
+		JLabel dates_lbl = new JLabel("Unesite datume");
+		final JTextField upit = new JTextField(20);
+		upit.setSize(25,25);
+		filter_dates_panel.add(dates_lbl);
+		filter_dates_panel.add(upit);
+		
+		JButton btn_dates_filtering = new JButton("Submit");
+		filter_dates_panel.add(btn_dates_filtering);					
+		
+		prihod_lbl = new JLabel();
+		rashod_lbl = new JLabel();	
+		
+		btn_dates_filtering.addActionListener(new ActionListener() { 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String[] dates = upit.getText().split(" ");
+				LocalDate date1 = LocalDate.parse(dates[0]);
+				LocalDate date2 = LocalDate.parse(dates[1]);
+				
+				System.out.println(date1 + " " + date2);
+				
+				List<String[]> objekti_za_brisanje = new ArrayList<String[]>();
+				for (String[] s : arr) {
+					LocalDate temp = LocalDate.parse(s[0]);
+					if (temp.isBefore(date1) || temp.isAfter(date2)) {
+						objekti_za_brisanje.add(arr.get(arr.indexOf(s)));
+					}
+				}
+				
+				System.out.println(arr.size());
+				for (String[] s : objekti_za_brisanje) {				
+					arr.remove(s);
+				}				
+				
+				int prihod = 0;
+				int rashod = 0;
+				for (String[] s : arr) {
+					if (s[2].equals("prihod")) {
+						prihod += Integer.parseInt(s[1]);
+					}
+					else {
+						rashod += Integer.parseInt(s[1]);
+					}
+				}
+				
+				prihod_lbl.setText("Prihod: " + prihod);		
+				rashod_lbl.setText("Rashod: " + rashod);
+				
+				System.out.println("Prihod: " + prihod);
+				System.out.println("Rashod: " + rashod);
+			}
+		});
+
+		filter_dates_panel.add(prihod_lbl);
+		filter_dates_panel.add(rashod_lbl);
+		
+		filter_dates.setVisible(true);
+	}
+		
+	public void Spremljene_Sobe() throws IOException {
+		spremljene_sobe = new JFrame();
+		spremljene_sobe_panel = new JPanel();
+		
+		spremljene_sobe.setSize(700, 300);
+    	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    final int x = (int) ((dimension.getWidth() - spremljene_sobe.getWidth()) / 2);
+	    final int y = (int) ((dimension.getHeight() - spremljene_sobe.getHeight()) / 2);
+	    spremljene_sobe.setLocation(x, y);
+	    
+	    spremljene_sobe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	    spremljene_sobe.addWindowListener(new WindowAdapter() {
+	    	@Override
+	    	public void windowClosing(WindowEvent e) {
+	    		int opt = JOptionPane.showConfirmDialog(null, "Do you want to close this window?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			e.getWindow().dispose();
+	    		}
+	    	}
+	    });
+	    
+	    spremljene_sobe.add(spremljene_sobe_panel);
+	    
+	    JLabel lbl_prvi = new JLabel("Početni datum: ");
+	    spremljene_sobe_panel.add(lbl_prvi);
+	    
+	    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		txtDate_prvi = new JFormattedTextField(df);
+		txtDate_prvi.setSize(100,165);
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDateTime now = LocalDateTime.now();
+		txtDate_prvi.setText(dtf.format(now));
+		spremljene_sobe_panel.add(txtDate_prvi);
+	    
+		JLabel lbl_drugi = new JLabel("Krajnji datum: ");
+		spremljene_sobe_panel.add(lbl_drugi);
+		
+		txtDate_drugi = new JFormattedTextField(df);
+		txtDate_drugi.setSize(100,165);
+		txtDate_drugi.setText(dtf.format(now));
+		spremljene_sobe_panel.add(txtDate_drugi);
+		
+		JButton filter = new JButton("Filter");
+		spremljene_sobe_panel.add(filter);
+		filter.addActionListener(new ActionListener() { 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//TABELA ZA PRIKAZ SOBARICA I BROJA OCISCENIH SOBA	    
+			    try {
+			    	LocalDate date1 = LocalDate.parse(txtDate_prvi.getText());
+			    	LocalDate date2 = LocalDate.parse(txtDate_drugi.getText());
+			    	
+					reader = new BufferedReader(new FileReader("src\\Users.csv"));
+					List<String[]> arr = new ArrayList<String[]>();
+					String line = "";
+					int lines = 0;
+					while((line = reader.readLine()) != null) {
+						String[] red = line.split(",");
+						if (red[2].equals("s")) {
+							arr.add(red);
+							lines++;
+						}
+					}
+				    
+					Object[][] data = new Object[lines][2];
+					String[] collNames = { "Sobarica", "Broj spremljenih soba"};
+					
+					for (int j = 0; j < lines; j++) {
+						String[] temp = arr.get(j);
+						data[j][0] = temp[0];
+					}
+					
+				    reader = new BufferedReader(new FileReader("src\\Sobarice_Datumi_Ciscenja.csv"));
+					arr.clear();
+					line = "";
+					System.out.println(date1 + " - " + date2);
+					while((line = reader.readLine()) != null) {
+						String[] red = line.split(",");						
+						arr.add(red);
+					}		
+											
+					for (int j = 0; j < lines; j++) {
+						int broj_ociscenih = 0;
+						for (String[] s : arr) {
+							if (data[j][0].equals(s[0])) {
+								System.out.println(LocalDate.parse(s[1]).isAfter(date1) + " " + LocalDate.parse(s[1]).isBefore(date2));
+								if (LocalDate.parse(s[1]).isAfter(date1) && LocalDate.parse(s[1]).isBefore(date2)) {
+									broj_ociscenih++;
+								}
+							}
+						}
+						data[j][1] = broj_ociscenih;
+					}
+					
+					final JTable table = new JTable(data, collNames);
+					table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+					table.getTableHeader().setReorderingAllowed(false);
+					table.setPreferredScrollableViewportSize(new Dimension(500, 150));
+					table.setFillsViewportHeight(true);
+					
+					tableSorter.setModel((AbstractTableModel) table.getModel());
+					table.setRowSorter(tableSorter);
+					
+					JScrollPane scrollPane = new JScrollPane(table);
+					spremljene_sobe_panel.add(scrollPane);	
+
+				} catch (FileNotFoundException e1) {
+
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+	    spremljene_sobe.setVisible(true);   
+	}
+	
+	public void Broj_odobrenih_rezervacija() throws IOException {
+		odobrene_rez = new JFrame();
+		odobrene_rez_panel = new JPanel();
+		
+		odobrene_rez.setSize(700, 300);
+    	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    final int x = (int) ((dimension.getWidth() - odobrene_rez.getWidth()) / 2);
+	    final int y = (int) ((dimension.getHeight() - odobrene_rez.getHeight()) / 2);
+	    odobrene_rez.setLocation(x, y);
+	    
+	    odobrene_rez.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	    odobrene_rez.addWindowListener(new WindowAdapter() {
+	    	@Override
+	    	public void windowClosing(WindowEvent e) {
+	    		int opt = JOptionPane.showConfirmDialog(null, "Do you want to close this window?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			e.getWindow().dispose();
+	    		}
+	    	}
+	    });
+	    
+	    odobrene_rez.add(odobrene_rez_panel);
+	    
+	    JLabel lbl_prvi = new JLabel("Početni datum: ");
+	    odobrene_rez_panel.add(lbl_prvi);
+	    
+	    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		txtDate_prvi = new JFormattedTextField(df);
+		txtDate_prvi.setSize(100,165);
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDateTime now = LocalDateTime.now();
+		txtDate_prvi.setText(dtf.format(now));
+		odobrene_rez_panel.add(txtDate_prvi);
+	    
+		JLabel lbl_drugi = new JLabel("Krajnji datum: ");
+		odobrene_rez_panel.add(lbl_drugi);
+		
+		txtDate_drugi = new JFormattedTextField(df);
+		txtDate_drugi.setSize(100,165);
+		txtDate_drugi.setText(dtf.format(now));
+		odobrene_rez_panel.add(txtDate_drugi);
+		
+		JButton filter = new JButton("Filter");
+		odobrene_rez_panel.add(filter);
+		
+		broj_odobrenih_lbl= new JLabel("Broj odobrenih rezervacija: 0");
+		odobrene_rez_panel.add(broj_odobrenih_lbl);
+		broj_odbijenih_lbl= new JLabel("Broj odbijenih rezervacija: 0");
+		odobrene_rez_panel.add(broj_odbijenih_lbl);
+		broj_otkazanih_lbl= new JLabel("Broj otkazanih rezervacija: 0");
+		odobrene_rez_panel.add(broj_otkazanih_lbl);
+		filter.addActionListener(new ActionListener() { 
+			@Override
+			public void actionPerformed(ActionEvent e) {    
+			    try {
+			    	LocalDate date1 = LocalDate.parse(txtDate_prvi.getText());
+			    	LocalDate date2 = LocalDate.parse(txtDate_drugi.getText());
+			    	
+			    	int broj_odobrenih = 0;
+					int broj_odbijenih = 0;
+					int broj_otkazanih = 0;
+			    	
+					reader = new BufferedReader(new FileReader("src\\Recepcioneri_Datumi_Odobravajna.csv"));
+					String line = "";										
+					while((line = reader.readLine()) != null) {					
+						if (LocalDate.parse(line).isAfter(date1) && LocalDate.parse(line).isBefore(date2)) {
+							broj_odobrenih++;
+						}
+					}
+
+					reader = new BufferedReader(new FileReader("src\\Recepcioneri_Datumi_Odbijanja.csv"));
+					line = "";										
+					while((line = reader.readLine()) != null) {					
+						if (LocalDate.parse(line).isAfter(date1) && LocalDate.parse(line).isBefore(date2)) {
+							broj_odbijenih++;
+						}
+					}
+
+					reader = new BufferedReader(new FileReader("src\\Gosti_Datumi_Otkazivanja.csv"));
+					line = "";										
+					while((line = reader.readLine()) != null) {					
+						if (LocalDate.parse(line).isAfter(date1) && LocalDate.parse(line).isBefore(date2)) {
+							broj_otkazanih++;
+						}
+					}
+
+					broj_odobrenih_lbl.setText("Broj odobrenih rezervacija: " + broj_odobrenih);
+					broj_odbijenih_lbl.setText("Broj odbijenih rezervacija: " + broj_odbijenih);
+					broj_otkazanih_lbl.setText("Broj otkazanih rezervacija: " + broj_otkazanih);
+
+				} catch (FileNotFoundException e1) {
+
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		odobrene_rez.setVisible(true);   
+	}
+	
+	public void Sobe_Datumi() throws IOException {
+		sobe_datumi = new JFrame();
+		sobe_datumi_panel = new JPanel();
+		
+		sobe_datumi.setSize(700, 300);
+    	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    final int x = (int) ((dimension.getWidth() - sobe_datumi.getWidth()) / 2);
+	    final int y = (int) ((dimension.getHeight() - sobe_datumi.getHeight()) / 2);
+	    sobe_datumi.setLocation(x, y);
+	    
+	    sobe_datumi.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	    sobe_datumi.addWindowListener(new WindowAdapter() {
+	    	@Override
+	    	public void windowClosing(WindowEvent e) {
+	    		int opt = JOptionPane.showConfirmDialog(null, "Do you want to close this window?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			e.getWindow().dispose();
+	    		}
+	    	}
+	    });
+	    
+	    sobe_datumi.add(sobe_datumi_panel);
+	    
+	    JLabel lbl_prvi = new JLabel("Početni datum: ");
+	    sobe_datumi_panel.add(lbl_prvi);
+	    
+	    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		txtDate_prvi = new JFormattedTextField(df);
+		txtDate_prvi.setSize(100,165);
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDateTime now = LocalDateTime.now();
+		txtDate_prvi.setText(dtf.format(now));
+		sobe_datumi_panel.add(txtDate_prvi);
+	    
+		JLabel lbl_drugi = new JLabel("Krajnji datum: ");
+		sobe_datumi_panel.add(lbl_drugi);
+		
+		txtDate_drugi = new JFormattedTextField(df);
+		txtDate_drugi.setSize(100,165);
+		txtDate_drugi.setText(dtf.format(now));
+		sobe_datumi_panel.add(txtDate_drugi);
+		
+		JButton filter = new JButton("Filter");
+		sobe_datumi_panel.add(filter);
+
+		filter.addActionListener(new ActionListener() { 
+			@Override
+			public void actionPerformed(ActionEvent e) {    
+			    try {
+			    	LocalDate date1 = LocalDate.parse(txtDate_prvi.getText());
+			    	LocalDate date2 = LocalDate.parse(txtDate_drugi.getText());
+			    	
+					reader = new BufferedReader(new FileReader("src\\Sobe.csv"));
+					List<String[]> sobe = new ArrayList<String[]>();
+					String line = "";
+					int lines = 0;
+					while((line = reader.readLine()) != null) {
+						String[] red = line.split(",");
+						sobe.add(red);
+						lines++;
+					}
+				    
+					Object[][] data = new Object[lines][4];
+					String[] collNames = { "Broj sobe", "Tip sobe", "Ukupan broj noćenja", "ukupan prihod" };
+					
+					for (int j = 0; j < lines; j++) {
+						String[] temp = sobe.get(j);
+						data[j][0] = temp[0];
+						data[j][1] = temp[1];
+					}
+					
+				    reader = new BufferedReader(new FileReader("src\\Sobe_Datumi.csv"));
+					List<String[]> datumi = new ArrayList<String[]>();
+					line = "";
+					while((line = reader.readLine()) != null) {
+						String[] red = line.split(",");
+						datumi.add(red);
+					}
+
+					for (int j = 0; j < lines; j++) {
+						int broj_nocenja = 0;
+						int prihod = 0;
+						for (String[] s : datumi) {
+							if (data[j][0].equals(s[0])) {
+								for (int k = 1; k < s.length; k++) {
+									String[] temp_dates = s[k].split(";");
+									LocalDate temp_date1 = LocalDate.parse(temp_dates[0]);
+									LocalDate temp_date2 = LocalDate.parse(temp_dates[1]);
+									
+									if (temp_date1.isAfter(date1) && temp_date2.isBefore(date2)) {
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, temp_date2);
+										System.out.println("case1 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.isBefore(date1) && temp_date2.isBefore(date2) && temp_date2.isAfter(date1)) {										
+										broj_nocenja += ChronoUnit.DAYS.between(date1, temp_date2);
+										System.out.println("case2 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.isAfter(date1) && temp_date2.isAfter(date2) && temp_date1.isBefore(date2)) {										
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, date2);
+										System.out.println("case3 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.equals(date1) && temp_date2.isBefore(date2)) {
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, temp_date2);
+										System.out.println("case4 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.isAfter(date1) && temp_date2.equals(date2)) {
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, temp_date2);
+										System.out.println("case5 : " + temp_date1 + " " + temp_date2);
+									}
+								}
+								break;
+							}							
+						}
+						data[j][2] = broj_nocenja;
+					}
+
+				    reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
+					List<String[]> rezervacije = new ArrayList<String[]>();
+					line = "";
+					while((line = reader.readLine()) != null) {
+						String[] red = line.split(",");
+						datumi.add(red);
+					}
+
+					for (int j = 0; j < lines; j++) {
+						int broj_nocenja = 0;
+						int prihod = 0;
+						for (String[] s : datumi) {
+							if (data[j][0].equals(s[0])) {
+								for (int k = 1; k < s.length; k++) {
+									String[] temp_dates = s[k].split(";");
+									LocalDate temp_date1 = LocalDate.parse(temp_dates[0]);
+									LocalDate temp_date2 = LocalDate.parse(temp_dates[1]);
+									
+									if (temp_date1.isAfter(date1) && temp_date2.isBefore(date2)) {
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, temp_date2);
+										System.out.println("case1 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.isBefore(date1) && temp_date2.isBefore(date2) && temp_date2.isAfter(date1)) {										
+										broj_nocenja += ChronoUnit.DAYS.between(date1, temp_date2);
+										System.out.println("case2 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.isAfter(date1) && temp_date2.isAfter(date2) && temp_date1.isBefore(date2)) {										
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, date2);
+										System.out.println("case3 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.equals(date1) && temp_date2.isBefore(date2)) {
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, temp_date2);
+										System.out.println("case4 : " + temp_date1 + " " + temp_date2);
+									}
+									else if (temp_date1.isAfter(date1) && temp_date2.equals(date2)) {
+										broj_nocenja += ChronoUnit.DAYS.between(temp_date1, temp_date2);
+										System.out.println("case5 : " + temp_date1 + " " + temp_date2);
+									}
+								}
+								break;
+							}							
+						}
+						data[j][2] = broj_nocenja;
+					}					
+					
+					reader = new BufferedReader(new FileReader("src\\Sobe_Prihodi.csv"));
+					List<String[]> prihodi = new ArrayList<String[]>();
+					line = "";
+					while((line = reader.readLine()) != null) {
+						String[] red = line.split(",");
+						prihodi.add(red);
+					}
+					
+					for (int j = 0; j < lines; j++) {
+						String[] temp = prihodi.get(j);
+						Integer prihod = 0;
+						for (int k = 1; k < temp.length; k++) {
+							String[] temp2 = temp[k].split(";");
+							int cena = Integer.parseInt(temp2[0]);
+							LocalDate datum = LocalDate.parse(temp2[1]);
+							if (datum.isAfter(date1) && datum.isBefore(date2)) {
+								prihod += cena;
+							}
+							else if (datum.equals(date1) || datum.equals(date2)) {
+								prihod += cena;
+							}
+						}
+						data[j][3] = prihod;
+					}
+					
+					final JTable table = new JTable(data, collNames);
+					table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+					table.getTableHeader().setReorderingAllowed(false);
+					table.setPreferredScrollableViewportSize(new Dimension(500, 150));
+					table.setFillsViewportHeight(true);
+					
+					tableSorter.setModel((AbstractTableModel) table.getModel());
+					table.setRowSorter(tableSorter);
+					
+					JScrollPane scrollPane = new JScrollPane(table);
+					sobe_datumi_panel.add(scrollPane);	
+
+				} catch (FileNotFoundException e1) {
+
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		sobe_datumi.setVisible(true);   
 	}
 }

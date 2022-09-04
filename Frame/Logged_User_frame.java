@@ -93,9 +93,15 @@ public class Logged_User_frame {
 			prikazEntitetaMenu.add(prikazCenaItem);
 			mainMenuAdmin.add(prikazEntitetaMenu);
 			
-			JMenu prikazPrihodaRashodaMenu = new JMenu("Meni za prikaz prihoda i rashoda");
+			JMenu prikazPrihodaRashodaMenu = new JMenu("Meni za razne prikaze");
 			JMenuItem prikazPrihodRashodaItem = new JMenuItem("Tabela prihoda i rashoda");
+			JMenuItem prikazSpremljenihItem = new JMenuItem("Tabela spremljenih soba");
+			JMenuItem broj_odobrenih_rezervacijaItem = new JMenuItem("Tabela sa brojem odobrenih rezervacija");
+			JMenuItem sobe_datumi_Item = new JMenuItem("Tabela prihoda soba");
 			prikazPrihodaRashodaMenu.add(prikazPrihodRashodaItem);
+			prikazPrihodaRashodaMenu.add(prikazSpremljenihItem);
+			prikazPrihodaRashodaMenu.add(broj_odobrenih_rezervacijaItem);
+			prikazPrihodaRashodaMenu.add(sobe_datumi_Item);
 			mainMenuAdmin.add(prikazPrihodaRashodaMenu);
 			
 			frame.setJMenuBar(mainMenuAdmin);
@@ -143,6 +149,33 @@ public class Logged_User_frame {
 						}
 		           }
 		    	});
+			prikazSpremljenihItem.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+		        		    admin.Spremljene_Sobe();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		           }
+		    	});
+			broj_odobrenih_rezervacijaItem.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+		        		    admin.Broj_odobrenih_rezervacija();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		           }
+		    	});	
+			sobe_datumi_Item.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+		        		    admin.Sobe_Datumi();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		           }
+		    	});			
 		}
 		else if(position.equals("r")) {
 			frame.setTitle("Recepcionist manager");
@@ -288,9 +321,11 @@ public class Logged_User_frame {
 
 			JMenuItem rezervisiItem = new JMenuItem("Napravi rezervaciju");
 			JMenuItem pregled_rezItem = new JMenuItem("Pregled odobrenih");
+			JMenuItem pregled_svih_rezItem = new JMenuItem("Pregled svih rezervacija");
 
 			rezervacijeMenu.add(rezervisiItem);
 			rezervacijeMenu.add(pregled_rezItem);
+			rezervacijeMenu.add(pregled_svih_rezItem);
 			mainMenuRecepcioner.add(rezervacijeMenu);
 			
 			frame.setJMenuBar(mainMenuRecepcioner);
@@ -299,7 +334,11 @@ public class Logged_User_frame {
 			//btn_dodaj_rez = new JButton("Napravi rezervaciju");
 			rezervisiItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   gost.ZahtevRezervacija(username);
+		        	   try {
+						gost.ZahtevRezervacija(username);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 		           }
 		    	});
 			//panel.add(btn_dodaj_rez);
@@ -315,6 +354,15 @@ public class Logged_User_frame {
 		           }
 		    	});
 			//panel.add(btn_pregled_rez);
+			pregled_svih_rezItem.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+						gost.Pregled_Svih_Rezervacija(username);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+		           }
+		    	});
 			JLabel gost_info = new JLabel("Username: " + username + "\nPozicija: gost");
 			panel.add(gost_info);
 		}
