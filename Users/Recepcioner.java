@@ -1,11 +1,15 @@
 package Users;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
@@ -23,7 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -39,7 +48,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import Hotel.Sobe;
@@ -99,13 +112,17 @@ public class Recepcioner extends Zaposleni {
 	JFrame pregled_soba;
 	JPanel pregled_soba_panel;
 
+	JFrame pregled2;
+	JPanel pregled2_panel;
+
 	LocalDate date_za_brisanje;
 
 	JFrame dodela_sobarica;
 	JPanel dodela_sobarica_panel;
 	
 	Integer cena_rez;
-
+	JTextField tSearch;
+	
 	// metode
 	public void RegisterGuest() { // e novog gosta - registracija
 		dialog = new JDialog();
@@ -191,7 +208,7 @@ public class Recepcioner extends Zaposleni {
 
 		dateLabel = new JLabel();
 
-		dateLabel.setText("Datum Rodjenja");
+		dateLabel.setText("Datum Rodjenja(yyyy-MM-dd)");
 		dateLabel.setBounds(10, 20, 80, 25);
 		panel.add(dateLabel);
 
@@ -234,39 +251,60 @@ public class Recepcioner extends Zaposleni {
 				date = dateText.getText();
 				fon = fonText.getText();
 				adresa = adresaText.getText();
-
-				if (pass.equals("") || user.equals("")) {
+				
+				//REGEX PROVERA MAIL UNOSA
+				Pattern pattern = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+				Matcher matcher = pattern.matcher(user);
+		        boolean found = matcher.find();
+		        
+		        //REGEX PROVERA FONA
+		        Pattern pattern_fon = Pattern.compile("^(\\d{3}[- .]?){2}\\d{4}$");
+		        Matcher matcher_fon = pattern_fon.matcher(fon);
+		        boolean found2 = matcher_fon.find();
+		        
+		        //DATE VALIDATION
+		        Pattern pattern_date = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$", Pattern.CASE_INSENSITIVE);
+				Matcher matcher_date = pattern_date.matcher(date);
+		        boolean found3 = matcher_date.find();
+		        
+				if (found == false || found2 == false || found3 == false) {
 					JFrame optFrame = new JFrame();
-					JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",
-							JOptionPane.OK_OPTION);
-				} else {
-					check = false;
-					Collection<String[]> coll = IscitajCSV();
-
-					for (String[] item : coll) {
-						if (user.equals(item[0]) && pass.equals(item[1])) {
-							check = true;
-							break;
-						}
-					}
-					if (check == true) {
+					JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",JOptionPane.OK_OPTION);
+				}
+				else if (found == true && found2 == true && found3 == true) {
+					if (pass.equals("") || user.equals("")) {
 						JFrame optFrame = new JFrame();
-						JOptionPane.showMessageDialog(optFrame, "User already exists!", "Input Error Message",
+						JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",
 								JOptionPane.OK_OPTION);
 					} else {
-						FileWriter writer;
-						try {
-							writer = new FileWriter("src\\Users.csv", true);
-							String ispis = user + "," + pass + ",g," + ime + "," + prezime + "," + pol + "," + date
-									+ "," + fon + "," + adresa + "\n";
-							writer.write(ispis);
-							writer.close();
+						check = false;
+						Collection<String[]> coll = IscitajCSV();
+
+						for (String[] item : coll) {
+							if (user.equals(item[0]) && pass.equals(item[1])) {
+								check = true;
+								break;
+							}
+						}
+						if (check == true) {
 							JFrame optFrame = new JFrame();
-							JOptionPane.showMessageDialog(null, "Korisnik kreiran!", "Information message",
-									JOptionPane.INFORMATION_MESSAGE);
-							dialog.dispose();
-						} catch (IOException e1) {
-							e1.printStackTrace();
+							JOptionPane.showMessageDialog(optFrame, "User already exists!", "Input Error Message",
+									JOptionPane.OK_OPTION);
+						} else {
+							FileWriter writer;
+							try {
+								writer = new FileWriter("src\\Users.csv", true);
+								String ispis = user + "," + pass + ",g," + ime + "," + prezime + "," + pol + "," + date
+										+ "," + fon + "," + adresa + "\n";
+								writer.write(ispis);
+								writer.close();
+								JFrame optFrame = new JFrame();
+								JOptionPane.showMessageDialog(null, "Korisnik kreiran!", "Information message",
+										JOptionPane.INFORMATION_MESSAGE);
+								dialog.dispose();
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
 						}
 					}
 				}
@@ -344,17 +382,29 @@ public class Recepcioner extends Zaposleni {
 
 		int i = 0;
 		for (String[] r : rezervacije_csv) {
-			data[i][0] = r[6];
+			data[i][0] = Integer.parseInt(r[6]);
 			data[i][1] = r[0];
 			data[i][2] = r[1];
 			data[i][3] = r[2];
 			data[i][4] = r[3];
-			data[i][5] = r[5];
+			data[i][5] = Integer.parseInt(r[5]);
 			data[i][6] = r[4];
 			i++;
 		}
 
-		final JTable table = new JTable(data, collNames);
+		DefaultTableModel model = new DefaultTableModel(data, collNames) {
+		    private static final long serialVersionUID = 1L;
+
+		    @Override
+		    public Class getColumnClass(int col) {
+		        if (col == 5 || col == 0) {
+		            return Integer.class;
+		        }
+		        return String.class;
+		    }
+
+		};
+		final JTable table = new JTable(model);
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.setPreferredScrollableViewportSize(new Dimension(500, 150));
@@ -862,19 +912,19 @@ public class Recepcioner extends Zaposleni {
 
 	public void RegulisiRezervaciju() throws IOException {// sredjivace rezervacije odobri/odbij, treba da se proveri
 															// postoji li soba na tom datumu
-		pregled = new JFrame("Pregled rezervacija");
-		pregled_panel = new JPanel();
+		pregled2 = new JFrame("Pregled rezervacija");
+		pregled2_panel = new JPanel();
 
-		pregled.setSize(650, 500);
+		pregled2.setSize(670, 500);
 
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-		final int x = (int) ((dimension.getWidth() - pregled.getWidth()) / 2);
-		final int y = (int) ((dimension.getHeight() - pregled.getHeight()) / 2);
-		pregled.setLocation(x, y);
+		final int x = (int) ((dimension.getWidth() - pregled2.getWidth()) / 2);
+		final int y = (int) ((dimension.getHeight() - pregled2.getHeight()) / 2);
+		pregled2.setLocation(x, y);
 
 		// CLOSING EVENT
-		pregled.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		pregled.addWindowListener(new WindowAdapter() {
+		pregled2.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		pregled2.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				int opt = JOptionPane.showConfirmDialog(null, "Do you want to close the window?", "close",
@@ -897,43 +947,87 @@ public class Recepcioner extends Zaposleni {
 		}
 		reader.close();
 
-		String[] collNames = { "ID", "Pocetni datum", "Krajnji datum", "Tip sobe", "Gost", "Cena", "Stanje",
-				"Dodatne usluge" };
+		String[] collNames = { "ID", "Pocetni datum", "Krajnji datum", "Tip sobe", "Gost", "Cena", "Stanje", "Dodatne usluge" };
 		Object[][] data = new Object[rezervacije_csv.size()][8];
 
 		int i = 0;
 		for (String[] r : rezervacije_csv) {
-			data[i][0] = r[6];
+			data[i][0] = Integer.parseInt(r[6]);
 			data[i][1] = r[0];
 			data[i][2] = r[1];
 			data[i][3] = r[2];
 			data[i][4] = r[3];
-			data[i][5] = r[5];
+			data[i][5] = Integer.parseInt(r[5]);
 			data[i][6] = r[4];
 			data[i][7] = r[7];
 			i++;
 		}
 
-		final JTable table = new JTable(data, collNames);
+		DefaultTableModel model = new DefaultTableModel(data, collNames) {
+		    private static final long serialVersionUID = 1L;
+
+		    @Override
+		    public Class getColumnClass(int col) {
+		        if (col == 5 || col == 0) {
+		            return Integer.class;
+		        }
+		        return String.class;
+		    }
+
+		};
+		final JTable table = new JTable(model);
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getTableHeader().setReorderingAllowed(false);
-		table.setPreferredScrollableViewportSize(new Dimension(500, 150));
+		table.setPreferredScrollableViewportSize(new Dimension(650, 150));
 		table.setFillsViewportHeight(true);
 
 		tableSorter.setModel((AbstractTableModel) table.getModel());
 		table.setRowSorter(tableSorter);
 
 		JScrollPane scrollPane = new JScrollPane(table);
-		pregled_panel.add(scrollPane);
+		pregled2_panel.add(scrollPane);
 
-		pregled.add(pregled_panel);
+		pregled2.add(pregled2_panel);
 
+		//SEARCH BAR
 		JPanel footer = new JPanel();
 		JButton btn_odobri = new JButton("Odobri");
 		footer.add(btn_odobri);
 		JButton btn_odbij = new JButton("Odbij");
 		footer.add(btn_odbij);
+		
+		tSearch = new JTextField(20);
+		JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.LEFT));		
+		pSearch.setBackground(Color.LIGHT_GRAY);
+		pSearch.add(new JLabel("Search:"));
+		pSearch.add(tSearch);
+		
+		pregled2_panel.add(pSearch, BorderLayout.SOUTH);
+		
+		tSearch.getDocument().addDocumentListener(new DocumentListener() {
+			
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				changedUpdate(e);
+			}
+			
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				changedUpdate(e);
+			}
+			
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				//System.out.println("~ "+tfSearch.getText());
+				if (tSearch.getText().trim().length() == 0) {
+				     tableSorter.setRowFilter(null);
+				  } else {
+					  tableSorter.setRowFilter(RowFilter.regexFilter("(?i)" + tSearch.getText().trim()));
+				  }
+			}
+		});
 
+		//ODOBRI/ODBIJ
 		rezervacije_csv.clear();
 
 		reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
@@ -981,7 +1075,7 @@ public class Recepcioner extends Zaposleni {
 						JFrame optFrame = new JFrame();
 						JOptionPane.showMessageDialog(null, "Rezervacija odobrena!", "Information message",
 								JOptionPane.INFORMATION_MESSAGE);
-						pregled.dispose();
+						pregled2.dispose();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
@@ -1032,7 +1126,7 @@ public class Recepcioner extends Zaposleni {
 						JFrame optFrame = new JFrame();
 						JOptionPane.showMessageDialog(null, "Rezervacija odbijena!", "Information message",
 								JOptionPane.INFORMATION_MESSAGE);
-						pregled.dispose();
+						pregled2.dispose();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
@@ -1127,8 +1221,8 @@ public class Recepcioner extends Zaposleni {
 			}
 		});
 
-		pregled.add(footer, BorderLayout.SOUTH);
-		pregled.setVisible(true);
+		pregled2.add(footer, BorderLayout.SOUTH);
+		pregled2.setVisible(true);
 	}
 
 	public void Guest_List() throws IOException {
@@ -1238,17 +1332,30 @@ public class Recepcioner extends Zaposleni {
 
 		int i = 0;
 		for (String[] r : rezervacije_csv) {
-			data[i][0] = r[6];
+			data[i][0] = Integer.parseInt(r[6]);
 			data[i][1] = r[0];
 			data[i][2] = r[1];
 			data[i][3] = r[2];
 			data[i][4] = r[3];
-			data[i][5] = r[5];
+			data[i][5] = Integer.parseInt(r[5]);
 			data[i][6] = r[4];
 			i++;
 		}
 
-		final JTable table = new JTable(data, collNames);
+		
+		DefaultTableModel model = new DefaultTableModel(data, collNames) {
+		    private static final long serialVersionUID = 1L;
+
+		    @Override
+		    public Class getColumnClass(int col) {
+		        if (col == 5 || col == 0) {
+		            return Integer.class;
+		        }
+		        return String.class;
+		    }
+
+		};
+		final JTable table = new JTable(model);
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.setPreferredScrollableViewportSize(new Dimension(500, 150));
@@ -1256,14 +1363,14 @@ public class Recepcioner extends Zaposleni {
 
 		tableSorter.setModel((AbstractTableModel) table.getModel());
 		table.setRowSorter(tableSorter);
-
+		
 		JScrollPane scrollPane = new JScrollPane(table);
 		pregled_panel.add(scrollPane);
 
 		pregled.add(pregled_panel);
 		pregled.setVisible(true);
 	}
-
+	
 	public void Pregled_Soba() throws IOException {
 		pregled_soba = new JFrame("Rezervacija");
 		pregled_soba_panel = new JPanel();

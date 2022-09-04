@@ -34,6 +34,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import Hotel.Rezervacije;
@@ -498,18 +499,30 @@ public class Gosti extends Korisnik {
 		int i = 0;		
 		for (String[] r : rezervacije_csv) {
 			if (r[4].equals("ODOBRENA")) {
-				data[i][0] = r[6];
+				data[i][0] = Integer.parseInt(r[6]);
 				data[i][1] = r[0];
 				data[i][2] = r[1];
 				data[i][3] = r[2];
 				data[i][4] = r[3];
-				data[i][5] = r[5];
+				data[i][5] = Integer.parseInt(r[5]);
 				data[i][6] = r[4];
 				i++;
 			}			
 		}
 		
-		final JTable table = new JTable(data, collNames);
+		DefaultTableModel model = new DefaultTableModel(data, collNames) {
+		    private static final long serialVersionUID = 1L;
+
+		    @Override
+		    public Class getColumnClass(int col) {
+		        if (col == 5 || col == 0) {
+		            return Integer.class;
+		        }
+		        return String.class;
+		    }
+
+		};
+		final JTable table = new JTable(model);
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.setPreferredScrollableViewportSize(new Dimension(500, 150));
@@ -638,7 +651,7 @@ public class Gosti extends Korisnik {
 		Integer ukupan_trosak = 0;
 		int i = 0;		
 		for (String[] r : rezervacije_csv) {
-			data[i][0] = r[6];
+			data[i][0] = Integer.parseInt(r[6]);
 			data[i][1] = r[0];
 			data[i][2] = r[1];
 			data[i][3] = r[2];
@@ -654,7 +667,19 @@ public class Gosti extends Korisnik {
 			i++;
 		}
 		
-		final JTable table = new JTable(data, collNames);
+		DefaultTableModel model = new DefaultTableModel(data, collNames) {
+		    private static final long serialVersionUID = 1L;
+
+		    @Override
+		    public Class getColumnClass(int col) {
+		        if (col == 5 || col == 0) {
+		            return Integer.class;
+		        }
+		        return String.class;
+		    }
+
+		};
+		final JTable table = new JTable(model);
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.setPreferredScrollableViewportSize(new Dimension(500, 150));

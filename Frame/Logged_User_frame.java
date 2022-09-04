@@ -1,5 +1,6 @@
 package Frame;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import java.awt.Toolkit;
@@ -39,6 +40,7 @@ public class Logged_User_frame {
 	private JButton btn_pregled_soba;
 	private JButton btn_check_out;
 	private JButton btn_sobe_za_ciscenje;
+	private JButton odjava;
 	
 //	private String user;
 //	private String pozicija;
@@ -72,6 +74,8 @@ public class Logged_User_frame {
 	    
 		frame.add(panel);
 	    
+		odjava = new JButton("Odjava");
+		
 		//DEO KOJI TREBA DA RADI
 		if(position.equals("a")) {
 			frame.setTitle("Adnimistrator manager");
@@ -175,7 +179,9 @@ public class Logged_User_frame {
 							e1.printStackTrace();
 						}
 		           }
-		    	});			
+		    	});
+			
+			panel.add(odjava, BorderLayout.SOUTH);
 		}
 		else if(position.equals("r")) {
 			frame.setTitle("Recepcionist manager");
@@ -295,12 +301,27 @@ public class Logged_User_frame {
 			
 			JLabel recepcioner_info = new JLabel("Username: " + username + "\nPozicija: recepcioner");
 			panel.add(recepcioner_info);
+			
+			panel.add(odjava, BorderLayout.SOUTH);
 		}
 		else if(position.equals("s")) {
 			frame.setTitle("Maid manager");
 			final Sobarica sobarica = new Sobarica();
-			btn_sobe_za_ciscenje = new JButton("Sobe za čišćenje");
-			btn_sobe_za_ciscenje.addActionListener(new ActionListener() {
+			
+			
+			JMenuBar mainMenuSobarica = new JMenuBar();
+			
+			JMenu sobeMenu = new JMenu("Sobe");
+
+			JMenuItem sobe_ciscenje_Item = new JMenuItem("Sobe za čišćenje");
+
+			sobeMenu.add(sobe_ciscenje_Item);
+			mainMenuSobarica.add(sobeMenu);
+			
+			frame.setJMenuBar(mainMenuSobarica);
+			
+			//btn_sobe_za_ciscenje = new JButton("Sobe za čišćenje");
+			sobe_ciscenje_Item.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {			        	 
 		        	   try {
 						sobarica.Sobe_Za_Ciscenje(username);
@@ -309,8 +330,9 @@ public class Logged_User_frame {
 					}
 		           }
 		    	});
-			panel.add(btn_sobe_za_ciscenje);
+			//panel.add(btn_sobe_za_ciscenje);
 			
+			panel.add(odjava, BorderLayout.SOUTH);
 		}
 		else {
 			frame.setTitle("Guest manager");
@@ -365,7 +387,20 @@ public class Logged_User_frame {
 		    	});
 			JLabel gost_info = new JLabel("Username: " + username + "\nPozicija: gost");
 			panel.add(gost_info);
+					
+			panel.add(odjava, BorderLayout.SOUTH);
 		}
+		
+		odjava.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	int opt = JOptionPane.showConfirmDialog(null, "Do you want to log out?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			frame.dispose();
+	    			Frame_Setup frameSetup = new Frame_Setup();
+	    		}
+            }
+        });
 		
 		frame.setVisible(true);
 	}

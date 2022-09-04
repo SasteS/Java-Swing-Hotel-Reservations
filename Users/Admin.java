@@ -24,6 +24,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -388,61 +390,79 @@ public class Admin extends Korisnik {
 				adresa = adresaText.getText();
 				sprema = spremaText.getText();
 				staz = Integer.parseInt(stazText.getText());
-				if (sprema.equals("niska") && staz < 10) {
-					plata = 400;	
-				}
-				else if (sprema.equals("niska") && staz > 10) {
-					plata = 600;
-				}
-				else if (sprema.equals("srednja") && staz < 10) {
-					plata = 500;
-				}
-				else if (sprema.equals("srednja") && staz > 10) {
-					plata = 700;
-				}
-				else if (sprema.equals("visoka") && staz < 10) {
-					plata = 600;
-				}
-				else if (sprema.equals("visoka") && staz > 10) {
-					plata = 800;
-				}
 				
-				if (pass.equals("") || user.equals("")) {
+				//REGEX PROVERA FONA
+		        Pattern pattern_fon = Pattern.compile("^(\\d{3}[- .]?){2}\\d{4}$");
+		        Matcher matcher_fon = pattern_fon.matcher(fon);
+		        boolean found2 = matcher_fon.find();
+		        
+		        //DATE VALIDATION
+		        Pattern pattern_date = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$", Pattern.CASE_INSENSITIVE);
+				Matcher matcher_date = pattern_date.matcher(date);
+		        boolean found3 = matcher_date.find();
+				
+		        if (found2 == false || found3 == false) {
 					JFrame optFrame = new JFrame();
-					JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message", JOptionPane.OK_OPTION);
+					JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",JOptionPane.OK_OPTION);
 				}
-				else {
-					check = false;
-					List<String[]> coll = IscitajCSV();
-					
-					for(String[] item : coll) {
-						if(user.equals(item[0]) && pass.equals(item[1])) {
-							check = true;
-							break;
-						}
+				else if (found2 == true && found3 == true) {
+		        
+					if (sprema.equals("niska") && staz < 10) {
+						plata = 400;	
 					}
-					if (check == true) {
+					else if (sprema.equals("niska") && staz > 10) {
+						plata = 600;
+					}
+					else if (sprema.equals("srednja") && staz < 10) {
+						plata = 500;
+					}
+					else if (sprema.equals("srednja") && staz > 10) {
+						plata = 700;
+					}
+					else if (sprema.equals("visoka") && staz < 10) {
+						plata = 600;
+					}
+					else if (sprema.equals("visoka") && staz > 10) {
+						plata = 800;
+					}
+					
+					if (pass.equals("") || user.equals("")) {
 						JFrame optFrame = new JFrame();
-						JOptionPane.showMessageDialog(optFrame, "User already exists!", "Input Error Message", JOptionPane.OK_OPTION);
+						JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message", JOptionPane.OK_OPTION);
 					}
 					else {
-						FileWriter writer;
-						try {
-							writer = new FileWriter("src\\Users.csv", true);
-							String ispis = "";
-							if (jComboBox.getItemAt(jComboBox.getSelectedIndex()).equals("r") || jComboBox.getItemAt(jComboBox.getSelectedIndex()).equals("s")) {
-								ispis = user + "," + pass + "," + jComboBox.getItemAt(jComboBox.getSelectedIndex()) + "," + ime + "," + prezime + "," + pol + "," + date + "," + fon + "," + adresa + "," + sprema + "," + staz + "," + plata + "\n";
+						check = false;
+						List<String[]> coll = IscitajCSV();
+						
+						for(String[] item : coll) {
+							if(user.equals(item[0]) && pass.equals(item[1])) {
+								check = true;
+								break;
 							}
-							else {
-								ispis = user + "," + pass + "," + jComboBox.getItemAt(jComboBox.getSelectedIndex()) + "," + ime + "," + prezime + "," + pol + "," + date + "," + fon + "," + adresa + ",100000\n";
+						}
+						if (check == true) {
+							JFrame optFrame = new JFrame();
+							JOptionPane.showMessageDialog(optFrame, "User already exists!", "Input Error Message", JOptionPane.OK_OPTION);
+						}
+						else {
+							FileWriter writer;
+							try {
+								writer = new FileWriter("src\\Users.csv", true);
+								String ispis = "";
+								if (jComboBox.getItemAt(jComboBox.getSelectedIndex()).equals("r") || jComboBox.getItemAt(jComboBox.getSelectedIndex()).equals("s")) {
+									ispis = user + "," + pass + "," + jComboBox.getItemAt(jComboBox.getSelectedIndex()) + "," + ime + "," + prezime + "," + pol + "," + date + "," + fon + "," + adresa + "," + sprema + "," + staz + "," + plata + "\n";
+								}
+								else {
+									ispis = user + "," + pass + "," + jComboBox.getItemAt(jComboBox.getSelectedIndex()) + "," + ime + "," + prezime + "," + pol + "," + date + "," + fon + "," + adresa + ",100000\n";
+								}
+								writer.write(ispis);
+								writer.close();
+								
+								JOptionPane.showMessageDialog(null, "Korisnik kreiran!", "Information message", JOptionPane.INFORMATION_MESSAGE);
+								dialog.dispose();
+							} catch (IOException e1) {
+								e1.printStackTrace();
 							}
-							writer.write(ispis);
-							writer.close();
-							
-							JOptionPane.showMessageDialog(null, "Korisnik kreiran!", "Information message", JOptionPane.INFORMATION_MESSAGE);
-							dialog.dispose();
-						} catch (IOException e1) {
-							e1.printStackTrace();
 						}
 					}
 				}
@@ -1186,7 +1206,6 @@ public class Admin extends Korisnik {
 		});		
 		
 		XYChart chart = getChart();
-		//new SwingWrapper<XYChart>(chart).displayChart();
 		JPanel chartPanel = new XChartPanel(chart);
 		prihod_rashod.add(chartPanel, BorderLayout.SOUTH);
 		
