@@ -1599,7 +1599,8 @@ public class Recepcioner extends Zaposleni {
 							String[] temp = line.split(",");
 							arr.add(temp);
 						}
-
+						
+						boolean ne_postoji_date = false;
 						FileWriter writer;
 						try {
 							writer = new FileWriter("src\\Sobe_Datumi.csv");
@@ -1624,6 +1625,8 @@ public class Recepcioner extends Zaposleni {
 									} catch (Exception e2) {
 										JOptionPane.showMessageDialog(null, "Datum ne postoji", "Error",
 												JOptionPane.ERROR_MESSAGE);
+										
+										ne_postoji_date = true;
 									}
 
 									for (String str : spare_array) {
@@ -1643,9 +1646,11 @@ public class Recepcioner extends Zaposleni {
 						}
 
 						// DODELJIVANJE SOBE SOBARICI
-						Dodeli_Sobaricu(broj_sobe);
+						if (ne_postoji_date == false) {
+							Dodeli_Sobaricu(broj_sobe);
 
-						pregled_soba.dispose();
+							pregled_soba.dispose();
+						}
 
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -1708,7 +1713,50 @@ public class Recepcioner extends Zaposleni {
 				}
 			}
 			ispis = ispis.substring(0, ispis.length() - 1);
-			System.out.println(ispis);
+			writer.write(ispis + "\n");
+		}
+		writer.close();
+		
+		
+		//OPTERECENJA
+		reader = new BufferedReader(new FileReader("src\\Sobarice_Opterecenje.csv"));
+		line = "";
+		lines = 0;
+		arr.clear();
+
+		while ((line = reader.readLine()) != null) {
+			String[] temp = line.split(",");
+			arr.add(temp);
+			lines++;
+		}
+		
+		Integer broj_opterecenja = 0;
+		for (String[] s : arr) {
+			if (s[0].equals(ime_sobarice_sa_min_posla)) {
+				broj_opterecenja = Integer.parseInt(s[1]);
+				broj_opterecenja++;
+				s[1] = broj_opterecenja.toString();
+			}
+		}
+		
+		writer = new FileWriter("src\\Sobarice_Opterecenje.csv");
+		writer.write("");
+		writer.close();
+
+		// PUNI NOVIM INFORMACIJAMA
+		writer = new FileWriter("src\\Sobarice_Opterecenje.csv", true);
+		for (String[] temp : arr) {
+			String ispis = "";
+			if (temp[0] == ime_sobarice_sa_min_posla) {
+				for (String str : arr2) {
+					ispis += str + ",";
+				}
+			} else {
+				for (String str : temp) {
+					ispis += str + ",";
+				}
+			}
+			ispis = ispis.substring(0, ispis.length() - 1);
 			writer.write(ispis + "\n");
 		}
 		writer.close();

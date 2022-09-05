@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.text.ParseException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -102,10 +103,12 @@ public class Logged_User_frame {
 			JMenuItem prikazSpremljenihItem = new JMenuItem("Tabela spremljenih soba");
 			JMenuItem broj_odobrenih_rezervacijaItem = new JMenuItem("Tabela sa brojem odobrenih rezervacija");
 			JMenuItem sobe_datumi_Item = new JMenuItem("Tabela prihoda soba");
+			JMenuItem grafovi_Item = new JMenuItem("Prikaz grafova");			
 			prikazPrihodaRashodaMenu.add(prikazPrihodRashodaItem);
 			prikazPrihodaRashodaMenu.add(prikazSpremljenihItem);
 			prikazPrihodaRashodaMenu.add(broj_odobrenih_rezervacijaItem);
 			prikazPrihodaRashodaMenu.add(sobe_datumi_Item);
+			prikazPrihodaRashodaMenu.add(grafovi_Item);
 			mainMenuAdmin.add(prikazPrihodaRashodaMenu);
 			
 			frame.setJMenuBar(mainMenuAdmin);
@@ -150,6 +153,9 @@ public class Logged_User_frame {
 		        		    admin.Prihod_Rashod();
 						} catch (IOException e1) {
 							e1.printStackTrace();
+						} catch (ParseException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
 		           }
 		    	});
@@ -178,6 +184,16 @@ public class Logged_User_frame {
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
+		           }
+		    	});
+			grafovi_Item.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {		        	   
+		        	   try {
+						admin.Prikaz_Grafova();
+					} catch (IOException | ParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 		           }
 		    	});
 			

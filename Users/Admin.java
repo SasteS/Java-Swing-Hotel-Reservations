@@ -14,8 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,10 +23,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.joda.time.DateTime;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -50,6 +53,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import org.knowm.xchart.BubbleChart;
+import org.knowm.xchart.PieChart;
+import org.knowm.xchart.PieChartBuilder;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XChartPanel;
 import org.knowm.xchart.XYChart;
@@ -1134,11 +1139,11 @@ public class Admin extends Korisnik {
 		izmena_cena.setVisible(true);
 	}
 	
-	public void Prihod_Rashod() throws IOException {
+	public void Prihod_Rashod() throws IOException, ParseException {
 		JFrame prihod_rashod = new JFrame();
-		JPanel prihod_rashod_panel = new JPanel();
+		JPanel prihod_rashod_panel = new JPanel(new MigLayout("wrap, insets 20, fill", "[center]","[center]20[center]20[center]"));
     	
-		prihod_rashod.setSize(700, 850);
+		prihod_rashod.setSize(700, 650);
     	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 	    final int x = (int) ((dimension.getWidth() - prihod_rashod.getWidth()) / 2);
 	    final int y = (int) ((dimension.getHeight() - prihod_rashod.getHeight()) / 2);
@@ -1190,49 +1195,175 @@ public class Admin extends Korisnik {
 		JScrollPane scrollPane = new JScrollPane(table);
 		prihod_rashod_panel.add(scrollPane);
 		
-		JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.CENTER));		
-		pSearch.setBackground(Color.LIGHT_GRAY);
+		//JPanel pSearch = new JPanel(new FlowLayout(FlowLayout.CENTER));		
+		//pSearch.setBackground(Color.LIGHT_GRAY);
 		
-		prihod_rashod.add(pSearch, BorderLayout.SOUTH);
+		//prihod_rashod.add(pSearch);//, BorderLayout.SOUTH);
 		
 		JButton btn_filter = new JButton("Filter");
-		pSearch.add(btn_filter);
+		//pSearch.add(btn_filter);
+		prihod_rashod_panel.add(btn_filter);
 		
 		btn_filter.addActionListener(new ActionListener() { 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Filter_Po_Datumima(arr);
 			}
-		});		
+		});
 		
-		XYChart chart = getChart();
+		XYChart chart = getChart_Prihodi();
 		JPanel chartPanel = new XChartPanel(chart);
 		prihod_rashod.add(chartPanel, BorderLayout.SOUTH);
 		
 		prihod_rashod.setVisible(true);
 	}
 	
-	public XYChart getChart() {
- 
-	    // Create Chart
-	    XYChart chart = new XYChartBuilder().width(800).height(600).title(getClass().getSimpleName()).xAxisTitle("X").yAxisTitle("Y").build();
-	 
+	public XYChart getChart_Prihodi() throws ParseException, IOException {
+		// Create Chart
+		XYChart chart = new XYChartBuilder().width(400).height(300).title(getClass().getSimpleName()).xAxisTitle("X").yAxisTitle("Y").build();
+	    
 	    // Customize Chart
 	    chart.getStyler().setLegendPosition(LegendPosition.InsideNE);
 	    chart.getStyler().setChartTitleVisible(false);
 	    chart.getStyler().setAxisTitlesVisible(false);
-	    //chart.getStyler().setDefaultSeriesRenderStyle(XYSeriesRenderStyle.Area);
-	 
-	    Date[] xData = {Date.valueOf("11-11-2022"), Date.valueOf("11-11-2022"), Date.valueOf("11-11-2022")};
-	    int[] yData = { 1, 2, 3, 4, 5 };
+	
+	    // Series    
+	    String pattern = "yyyy-MM-dd";
+	    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+	    Date now = new Date();
+	    Date daysAgo = new DateTime(now).minusDays(365).toDate();
+
+		reader = new BufferedReader(new FileReader("src\\Sobe.csv"));
+		List<String[]> sobe = new ArrayList<String[]>();
+		String line = "";
+		int lines = 0;
+		while((line = reader.readLine()) != null) {
+			String[] red = line.split(",");
+			sobe.add(red);
+			lines++;
+		}
+
+		reader = new BufferedReader(new FileReader("src\\Sobe_Prihodi.csv"));
+		List<String[]> sobe_prihodi = new ArrayList<String[]>();
+		line = "";
+		while((line = reader.readLine()) != null) {
+			String[] red = line.split(",");
+			sobe_prihodi.add(red);
+		}
+		
+	    ArrayList<Date> datumi = Fetch_xData(daysAgo, now, simpleDateFormat);
 	    
-	    // Series
-	    //chart.addSeries("a", xData, yData);
-	    //chart.addSeries("b", xData, yData);
-	    //chart.addSeries("c", xData, yData);
-	 
+	    //RADI
+	    String[] tipovi = { "ONE", "ONE_ONE", "TWO", "TWO_ONE", "TWO_TWO" };
+	    for (String tip : tipovi) {
+	    	ArrayList<Integer> yData = new ArrayList<Integer>();
+	    	//ArrayList<Date> xData = new ArrayList<Date>();
+	    	int cena = 0;
+		    System.out.println();
+		    System.out.println(tip);
+		    for (Date mesec : datumi) {
+		    	System.out.println(mesec);
+		    	cena = 0;
+		    	for (String[] soba : sobe) {
+					if (soba[1].equals(tip)) {	
+						for (String[] item : sobe_prihodi) {
+							if (soba[0].equals(item[0])) {
+								for(int i = 1; i < item.length; i++) {
+									String[] cena_date = item[i].split(";");
+									int temp_cena = Integer.parseInt(cena_date[0]);
+									Date temp_date = simpleDateFormat.parse(cena_date[1]);									
+									
+									//AKO ODGOVARA DATUMU ONDA DODAJ CENU
+									if (mesec.equals(now) == false) {
+										if (temp_date.before(new DateTime(mesec).plusDays(30).toDate()) && temp_date.after(mesec)) {
+											System.out.println(soba[0] + " " + soba[1]);
+											System.out.println(temp_cena + " " + temp_date);
+											cena += temp_cena;											
+										}
+									}
+								}
+							}
+						}
+					}
+		    	}
+		    	System.out.println("total cena meseca: " + cena);
+		    	yData.add(cena);
+		    }
+		    if (tip.equals("ONE")) {
+		    	chart.addSeries("jednokrevetna", datumi, yData);	
+		    }
+		    else if (tip.equals("ONE_ONE")) {
+		    	chart.addSeries("dvokrevetna - dva ležaja", datumi, yData);	
+		    }
+		    else if (tip.equals("TWO")) {
+		    	chart.addSeries("dvokrevetna - jedan ležaj", datumi, yData);	
+		    }
+		    else if (tip.equals("TWO_ONE")) {
+		    	chart.addSeries("trokrevetna", datumi, yData);	
+		    }
+		    else if (tip.equals("TWO_TWO")) {
+		    	chart.addSeries("četvorokrevetna", datumi, yData);	
+		    }
+		}
+	    
+	    //ZA SVE UKUPNO RACUN
+	    ArrayList<Integer> yData = new ArrayList<Integer>();
+	    int cena;
+	    for (Date mesec : datumi) {
+	    	//System.out.println(mesec);
+	    	cena = 0;
+	    	for (String[] soba : sobe) {	
+				for (String[] item : sobe_prihodi) {
+					if (soba[0].equals(item[0])) {
+						for(int i = 1; i < item.length; i++) {
+							String[] cena_date = item[i].split(";");
+							int temp_cena = Integer.parseInt(cena_date[0]);
+							Date temp_date = simpleDateFormat.parse(cena_date[1]);									
+							
+							//AKO ODGOVARA DATUMU ONDA DODAJ CENU
+							if (mesec.equals(now) == false) {
+								if (temp_date.before(new DateTime(mesec).plusDays(30).toDate()) && temp_date.after(mesec)) {
+									//System.out.println(soba[0] + " " + soba[1]);
+									//System.out.println(temp_cena + " " + temp_date);
+									cena += temp_cena;
+								}
+							}
+						}
+					}
+				}
+	    	}
+	    	//System.out.println("total cena meseca: " + cena);
+	    	yData.add(cena);
+	    }
+	    chart.addSeries("ukupno", datumi, yData);
+	    
 	    return chart;
 	}
+	
+	public ArrayList<Date> Fetch_xData(Date pocetak, Date kraj, SimpleDateFormat simpleDateFormat) throws IOException {
+		ArrayList<Date> data = new ArrayList<Date>();
+		
+		int[] months = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+		
+		//RADI - GENERISE LISTU DATEOVA ZA X-OSU
+		data.add(pocetak);
+		for (int month : months) {
+			data.add(new DateTime(pocetak).plusDays(month).toDate());
+			System.out.println(new DateTime(pocetak).plusDays(month).toDate());
+			pocetak = new DateTime(pocetak).plusDays(month).toDate();
+		}
+		
+		return data;
+	}
+	
+	//public ArrayList<Integer> Fetch_yData() throws IOException {
+		//TREBA DA KUPI PROFITE
+		
+	//	ArrayList<Integer> data = new ArrayList<Integer>();
+		
+		
+	//	return data;
+	//}
 	
 	public void Filter_Po_Datumima(final List<String[]> arr) {
 		filter_dates = new JFrame();
@@ -1747,5 +1878,142 @@ public class Admin extends Korisnik {
 		});
 		
 		sobe_datumi.setVisible(true);   
+	}
+	
+	public void Prikaz_Grafova() throws IOException, ParseException {
+		JFrame prikaz_grafova = new JFrame();
+		JPanel prikaz_grafova_panel = new JPanel();
+		
+		prikaz_grafova.setSize(700, 650);
+    	Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+	    final int x = (int) ((dimension.getWidth() - prikaz_grafova.getWidth()) / 2);
+	    final int y = (int) ((dimension.getHeight() - prikaz_grafova.getHeight()) / 2);
+	    prikaz_grafova.setLocation(x, y);
+	    
+	    prikaz_grafova.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	    prikaz_grafova.addWindowListener(new WindowAdapter() {
+	    	@Override
+	    	public void windowClosing(WindowEvent e) {
+	    		int opt = JOptionPane.showConfirmDialog(null, "Do you want to close this window?", "close", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	    		if (opt == JOptionPane.YES_OPTION) {
+	    			e.getWindow().dispose();
+	    		}
+	    	}
+	    });
+	    
+	    prikaz_grafova.add(prikaz_grafova_panel);
+	    
+	    PieChart chart_sobarice = getChart_Sobarice();
+		JPanel chartPanel_s = new XChartPanel(chart_sobarice);
+		prikaz_grafova_panel.add(chartPanel_s);
+		
+		PieChart chart_rezervacije = getChart_Rezervacije();
+		JPanel chartPanel_r = new XChartPanel(chart_rezervacije);
+		prikaz_grafova_panel.add(chartPanel_r);
+	    
+	    prikaz_grafova.setVisible(true);
+	}
+	
+	public PieChart getChart_Sobarice() throws IOException {
+		PieChart chart = new PieChartBuilder().width(400).height(300).title(getClass().getSimpleName()).build();
+		chart.getStyler().setLegendPosition(LegendPosition.InsideNE);
+	    chart.getStyler().setChartTitleVisible(false);
+	    //chart.getStyler().setAxisTitlesVisible(false);	    	   
+	    
+	    BufferedReader reader = new BufferedReader(new FileReader("src\\Sobarice_Opterecenje.csv"));
+		List<String[]> arr = new ArrayList<String[]>();
+		String line = "";
+		while((line = reader.readLine()) != null) {
+			String[] red = line.split(",");
+			arr.add(red);
+		}
+		reader.close();
+		
+		int broj_boja = arr.size();
+		Random rand = new Random();
+		Color[] sliceColors = new Color[broj_boja];
+		for (int i = 0; i < broj_boja; i++) {
+			float r = rand.nextFloat();
+			float g = rand.nextFloat();
+			float b = rand.nextFloat();
+			sliceColors[i] = new Color(r, g, b);
+		}
+		
+	    chart.getStyler().setSeriesColors(sliceColors);
+
+	    // Series
+		for (String[] s : arr) {
+		    chart.addSeries(s[0], Integer.parseInt(s[1]));
+		}		
+	 
+	    return chart;
+	}
+	
+	public PieChart getChart_Rezervacije() throws IOException, ParseException {
+		PieChart chart = new PieChartBuilder().width(400).height(300).title(getClass().getSimpleName()).build();
+		chart.getStyler().setLegendPosition(LegendPosition.InsideNE);
+	    chart.getStyler().setChartTitleVisible(false);
+	    //chart.getStyler().setAxisTitlesVisible(false);	    	   
+	    
+	    Date krajnji = new Date();
+	    Date pocetni = new DateTime(krajnji).minusDays(30).toDate();
+	    
+	    BufferedReader reader = new BufferedReader(new FileReader("src\\Rezervacije.csv"));
+		List<String[]> arr = new ArrayList<String[]>();
+		String line = "";
+		int cekanje = 0;
+		int odobreno = 0;
+		int odbijeno = 0;
+		int otkazano = 0;
+		while((line = reader.readLine()) != null) {
+			String[] red = line.split(",");
+			Date rezd_pocetak = new SimpleDateFormat("yyyy-MM-dd").parse(red[0]);
+			Date rezd_kraj = new SimpleDateFormat("yyyy-MM-dd").parse(red[1]);
+			
+			System.out.println(rezd_pocetak + "  " + pocetni);
+			if (rezd_pocetak.after(pocetni)) {
+				System.out.println("true");
+				if (red[4].equals("ODOBRENA")) {
+					odobreno++;
+				}
+				else if (red[4].equals("ODBIJENA")) {
+					odbijeno++;
+				}
+				else if (red[4].equals("OTKAZANA")) {
+					otkazano++;
+				}
+				else if (red[4].equals("NA_CEKANJU")) {
+					cekanje++;
+				}
+				arr.add(red);
+			}
+		}
+		reader.close();
+		
+		System.out.println(arr.size());
+		System.out.println("odobrene " + odobreno);
+		System.out.println("odbijene " + odbijeno);
+		System.out.println("otkazane " + otkazano);
+		System.out.println("cekanje " + cekanje);
+		int broj_boja = arr.size();
+		Random rand = new Random();
+		Color[] sliceColors = new Color[broj_boja];
+		for (int i = 0; i < broj_boja; i++) {
+			float r = rand.nextFloat();
+			float g = rand.nextFloat();
+			float b = rand.nextFloat();
+			sliceColors[i] = new Color(r, g, b);
+		}
+		
+	    chart.getStyler().setSeriesColors(sliceColors);
+
+	    // Series
+	    
+		chart.addSeries("ODOBRENA", odobreno);
+		chart.addSeries("OTKAZANA", otkazano);
+		chart.addSeries("ODBIJENA", odbijeno);
+		chart.addSeries("NA ČEKANJU", cekanje);
+		
+	    return chart;
 	}
 }
