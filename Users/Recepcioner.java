@@ -242,71 +242,76 @@ public class Recepcioner extends Zaposleni {
 		btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				user = userText.getText();
-				char[] passCH = passText.getPassword();
-				pass = new String(passCH);
-				ime = imeText.getText();
-				prezime = prezimeText.getText();
-				pol = polText.getText();
-				date = dateText.getText();
-				fon = fonText.getText();
-				adresa = adresaText.getText();
-				
-				//REGEX PROVERA MAIL UNOSA
-				Pattern pattern = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-				Matcher matcher = pattern.matcher(user);
-		        boolean found = matcher.find();
-		        
-		        //REGEX PROVERA FONA
-		        Pattern pattern_fon = Pattern.compile("^(\\d{3}[- .]?){2}\\d{4}$");
-		        Matcher matcher_fon = pattern_fon.matcher(fon);
-		        boolean found2 = matcher_fon.find();
-		        
-		        //DATE VALIDATION
-		        Pattern pattern_date = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$", Pattern.CASE_INSENSITIVE);
-				Matcher matcher_date = pattern_date.matcher(date);
-		        boolean found3 = matcher_date.find();
-		        
-				if (found == false || found2 == false || found3 == false) {
-					JFrame optFrame = new JFrame();
-					JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",JOptionPane.OK_OPTION);
-				}
-				else if (found == true && found2 == true && found3 == true) {
-					if (pass.equals("") || user.equals("")) {
+				try {
+					user = userText.getText();
+					char[] passCH = passText.getPassword();
+					pass = new String(passCH);
+					ime = imeText.getText();
+					prezime = prezimeText.getText();
+					pol = polText.getText();
+					date = dateText.getText();
+					fon = fonText.getText();
+					adresa = adresaText.getText();
+					
+					//REGEX PROVERA MAIL UNOSA
+					Pattern pattern = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+					Matcher matcher = pattern.matcher(user);
+			        boolean found = matcher.find();
+			        
+			        //REGEX PROVERA FONA
+			        Pattern pattern_fon = Pattern.compile("^(\\d{3}[- .]?){2}\\d{4}$");
+			        Matcher matcher_fon = pattern_fon.matcher(fon);
+			        boolean found2 = matcher_fon.find();
+			        
+			        //DATE VALIDATION
+			        Pattern pattern_date = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$", Pattern.CASE_INSENSITIVE);
+					Matcher matcher_date = pattern_date.matcher(date);
+			        boolean found3 = matcher_date.find();
+			        
+					if (found == false || found2 == false || found3 == false) {
 						JFrame optFrame = new JFrame();
-						JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",
-								JOptionPane.OK_OPTION);
-					} else {
-						check = false;
-						Collection<String[]> coll = IscitajCSV();
-
-						for (String[] item : coll) {
-							if (user.equals(item[0]) && pass.equals(item[1])) {
-								check = true;
-								break;
-							}
-						}
-						if (check == true) {
+						JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",JOptionPane.OK_OPTION);
+					}
+					else if (found == true && found2 == true && found3 == true) {
+						if (pass.equals("") || user.equals("")) {
 							JFrame optFrame = new JFrame();
-							JOptionPane.showMessageDialog(optFrame, "User already exists!", "Input Error Message",
+							JOptionPane.showMessageDialog(optFrame, "Wrong input!", "Input Error Message",
 									JOptionPane.OK_OPTION);
 						} else {
-							FileWriter writer;
-							try {
-								writer = new FileWriter("src\\Users.csv", true);
-								String ispis = user + "," + pass + ",g," + ime + "," + prezime + "," + pol + "," + date
-										+ "," + fon + "," + adresa + "\n";
-								writer.write(ispis);
-								writer.close();
+							check = false;
+							Collection<String[]> coll = IscitajCSV();
+	
+							for (String[] item : coll) {
+								if (user.equals(item[0]) && pass.equals(item[1])) {
+									check = true;
+									break;
+								}
+							}
+							if (check == true) {
 								JFrame optFrame = new JFrame();
-								JOptionPane.showMessageDialog(null, "Korisnik kreiran!", "Information message",
-										JOptionPane.INFORMATION_MESSAGE);
-								dialog.dispose();
-							} catch (IOException e1) {
-								e1.printStackTrace();
+								JOptionPane.showMessageDialog(optFrame, "User already exists!", "Input Error Message",
+										JOptionPane.OK_OPTION);
+							} else {
+								FileWriter writer;
+								try {
+									writer = new FileWriter("src\\Users.csv", true);
+									String ispis = user + "," + pass + ",g," + ime + "," + prezime + "," + pol + "," + date
+											+ "," + fon + "," + adresa + "\n";
+									writer.write(ispis);
+									writer.close();
+									JFrame optFrame = new JFrame();
+									JOptionPane.showMessageDialog(null, "Korisnik kreiran!", "Information message",
+											JOptionPane.INFORMATION_MESSAGE);
+									dialog.dispose();
+								} catch (IOException e1) {
+									e1.printStackTrace();
+								}
 							}
 						}
 					}
+				}
+				catch (Exception e1) {
+					JOptionPane.showMessageDialog(null, "Popuniti sva polja!", "Information message", JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 		});
@@ -1229,7 +1234,7 @@ public class Recepcioner extends Zaposleni {
 		guests_table = new JFrame("Check in");
 		guests_table_panel = new JPanel();
 
-		guests_table.setSize(650, 500);
+		guests_table.setSize(650, 270);
 
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		final int x = (int) ((dimension.getWidth() - guests_table.getWidth()) / 2);
@@ -1297,7 +1302,7 @@ public class Recepcioner extends Zaposleni {
 		pregled = new JFrame("Pregled rezervacija");
 		pregled_panel = new JPanel();
 
-		pregled.setSize(650, 500);
+		pregled.setSize(650, 270);
 
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		final int x = (int) ((dimension.getWidth() - pregled.getWidth()) / 2);
@@ -1375,7 +1380,7 @@ public class Recepcioner extends Zaposleni {
 		pregled_soba = new JFrame("Rezervacija");
 		pregled_soba_panel = new JPanel();
 
-		pregled_soba.setSize(650, 500);
+		pregled_soba.setSize(650, 270);
 
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		final int x = (int) ((dimension.getWidth() - pregled_soba.getWidth()) / 2);

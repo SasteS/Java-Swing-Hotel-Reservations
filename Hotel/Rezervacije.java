@@ -21,6 +21,10 @@ public class Rezervacije {
 		this.cena = 2000;
 	}
 	
+	public void set_id(int arg1) {
+		this.id = arg1;
+	}
+	
 	public int get_id() {
 		return this.id;
 	}

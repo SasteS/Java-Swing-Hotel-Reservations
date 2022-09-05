@@ -27,6 +27,7 @@ import Users.Admin;
 import Users.Gosti;
 import Users.Recepcioner;
 import Users.Sobarica;
+import net.miginfocom.swing.MigLayout;
 
 public class Logged_User_frame {
 	private JFrame frame;
@@ -48,7 +49,7 @@ public class Logged_User_frame {
 	
 	public Logged_User_frame(final String username, String position) throws IOException {
 		frame = new JFrame();
-		panel = new JPanel();
+		panel = new JPanel(new MigLayout("wrap, insets 20, fill", "[right]20[center]", "[center]"));//arg 2 broj col, arg 3 br redova
 		
 		frame.setSize(650, 500);
 		
@@ -114,7 +115,7 @@ public class Logged_User_frame {
 			frame.setJMenuBar(mainMenuAdmin);
 			
 			//IZBRISATI OVE 3 LINIJE
-			JLabel reminder = new JLabel("Username: " + username + "\nPozicija: admin");
+			JLabel reminder = new JLabel("Username: " + username + "       Pozicija: admin");
 			panel.add(reminder);
 			final Admin admin = new Admin();
 			//DODAVANJE ENTITETA
@@ -315,7 +316,7 @@ public class Logged_User_frame {
 		    	});
 			//panel.add(btn_check_out);
 			
-			JLabel recepcioner_info = new JLabel("Username: " + username + "\nPozicija: recepcioner");
+			JLabel recepcioner_info = new JLabel("Username: " + username + "       Pozicija: recepcioner");
 			panel.add(recepcioner_info);
 			
 			panel.add(odjava, BorderLayout.SOUTH);
@@ -347,6 +348,8 @@ public class Logged_User_frame {
 		           }
 		    	});
 			//panel.add(btn_sobe_za_ciscenje);
+			JLabel recepcioner_info = new JLabel("Username: " + username + "       Pozicija: sobarica");
+			panel.add(recepcioner_info);
 			
 			panel.add(odjava, BorderLayout.SOUTH);
 		}
@@ -401,7 +404,7 @@ public class Logged_User_frame {
 					}
 		           }
 		    	});
-			JLabel gost_info = new JLabel("Username: " + username + "\nPozicija: gost");
+			JLabel gost_info = new JLabel("Username: " + username + "       Pozicija: gost");
 			panel.add(gost_info);
 					
 			panel.add(odjava, BorderLayout.SOUTH);

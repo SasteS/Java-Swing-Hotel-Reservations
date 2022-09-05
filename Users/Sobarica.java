@@ -37,7 +37,7 @@ public class Sobarica extends Zaposleni {
 		
 		tabela_soba = new JFrame("pregled_soba");
 		tabela_soba_panel = new JPanel();
-		tabela_soba.setSize(650, 500);
+		tabela_soba.setSize(650, 270);
 
 		Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
 		final int x = (int) ((dimension.getWidth() - tabela_soba.getWidth()) / 2);
