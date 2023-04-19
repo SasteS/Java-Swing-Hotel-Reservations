@@ -79,7 +79,7 @@ public class Logged_User_frame {
 		odjava = new JButton("Odjava");
 		
 		//DEO KOJI TREBA DA RADI
-		if(position.equals("a")) {
+		if(position.equals("m")) {
 			frame.setTitle("Adnimistrator manager");
 			
 			//OPTION MENU ZA ADMINA
@@ -321,7 +321,7 @@ public class Logged_User_frame {
 			
 			panel.add(odjava, BorderLayout.SOUTH);
 		}
-		else if(position.equals("s")) {
+		else if(position.equals("k")) {
 			frame.setTitle("Maid manager");
 			final Sobarica sobarica = new Sobarica();
 			

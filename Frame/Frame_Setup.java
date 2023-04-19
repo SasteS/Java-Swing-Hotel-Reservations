@@ -135,7 +135,7 @@ public class Frame_Setup implements ActionListener {
 		String line = "";
 		
 		try {
-			reader = new BufferedReader(new FileReader("src\\Users.csv"));
+			reader = new BufferedReader(new FileReader("src\\Data\\Users.csv"));
 			
 			Collection<String[]> coll = new ArrayList<String[]>();
 			while((line = reader.readLine()) != null) {
