@@ -19,6 +19,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import Services.ManagerService;
+import Services.KozmeticService;
+import Services.RecepcionistService;
+
 import javax.swing.JDialog;
 
 import java.awt.Window;
@@ -118,23 +123,21 @@ public class Logged_User_frame {
 			JLabel reminder = new JLabel("Username: " + username + "       Pozicija: admin");
 			panel.add(reminder);
 			final Admin admin = new Admin();
+			final ManagerService managerService = new ManagerService();
 			//DODAVANJE ENTITETA
 			
 			dodajZaposlenogItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   admin.DodajZaposlenog();
+		        	   //admin.DodajZaposlenog();
+		        	   managerService.AddEmployee();
 		           }
 		    	});
 			
 			//IZLISTAVANJE ENTITETA
 			prikazEntitetaItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   try {
-						admin.PrikazSvihEndtiteta();
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+		        	   //admin.PrikazSvihEndtiteta();
+					   managerService.AllEntitiesTableView();
 		           }
 		    	});
 			
@@ -234,10 +237,13 @@ public class Logged_User_frame {
 			frame.setJMenuBar(mainMenuRecepcioner);
 			
 			final Recepcioner recepcioner = new Recepcioner();
+			final RecepcionistService recepcionistService = new RecepcionistService();
+			
 			//btn_dodaj_gosta = new JButton("Dodaj gosta");
 			dodajGostaItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   recepcioner.RegisterGuest();
+		        	   //recepcioner.RegisterGuest();
+		        	   recepcionistService.RegisterClient();
 		           }
 		    	});
 			//panel.add(btn_dodaj_gosta);
@@ -247,7 +253,8 @@ public class Logged_User_frame {
 			regulisiRezervacijeItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {
 		        	   try {
-						recepcioner.RegulisiRezervaciju();
+						//recepcioner.RegulisiRezervaciju();
+						recepcionistService.RegulateReservation();
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -322,39 +329,53 @@ public class Logged_User_frame {
 			panel.add(odjava, BorderLayout.SOUTH);
 		}
 		else if(position.equals("k")) {
-			frame.setTitle("Maid manager");
-			final Sobarica sobarica = new Sobarica();
-			
+			frame.setTitle("Kozmetic manager");
+			//final Sobarica sobarica = new Sobarica();
+			final KozmeticService kozmeticService = new KozmeticService(username);
 			
 			JMenuBar mainMenuSobarica = new JMenuBar();
 			
-			JMenu sobeMenu = new JMenu("Sobe");
+			JMenu sobeMenu = new JMenu("Tretmani");
 
-			JMenuItem sobe_ciscenje_Item = new JMenuItem("Sobe za čišćenje");
+			JMenuItem treatmentOverview = new JMenuItem("Pregled tretmana");
+			JMenuItem personalSchedule = new JMenuItem("Raspored");
 
-			sobeMenu.add(sobe_ciscenje_Item);
+			sobeMenu.add(treatmentOverview);
+			sobeMenu.add(personalSchedule);
 			mainMenuSobarica.add(sobeMenu);
 			
 			frame.setJMenuBar(mainMenuSobarica);
 			
-			//btn_sobe_za_ciscenje = new JButton("Sobe za čišćenje");
-			sobe_ciscenje_Item.addActionListener(new ActionListener() {
+			treatmentOverview.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {			        	 
 		        	   try {
-						sobarica.Sobe_Za_Ciscenje(username);
+						//sobarica.Sobe_Za_Ciscenje(username);
+						kozmeticService.KozmeticTreatments();
+						
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+		           }
+		    	});
+			
+			personalSchedule.addActionListener(new ActionListener() {
+		           public void actionPerformed(ActionEvent e) {			        	 
+		        	   try {
+						kozmeticService.DisplaySchedule();
+						
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
 		           }
 		    	});
 			//panel.add(btn_sobe_za_ciscenje);
-			JLabel recepcioner_info = new JLabel("Username: " + username + "       Pozicija: sobarica");
+			JLabel recepcioner_info = new JLabel("Username: " + username + "       Pozicija: kozmeticar");
 			panel.add(recepcioner_info);
 			
 			panel.add(odjava, BorderLayout.SOUTH);
 		}
 		else {
-			frame.setTitle("Guest manager");
+			frame.setTitle("Client manager");
 			
 			JMenuBar mainMenuRecepcioner = new JMenuBar();
 			

@@ -8,8 +8,11 @@ public abstract class Employee {
 	protected String sex;
 	protected String phone;
 	protected String address;
-	public enum Position { MANAGER, KOZMETIC, RECEPCIONIST };
+	public enum Position { MANAGER, KOZMETIC, RECEPCIONIST, CLIENT };
 	protected Position position;
+	protected String sprema;
+	protected int staz;
+	protected int pay;
 	
 	public Employee() {
 		name = "";
@@ -19,9 +22,12 @@ public abstract class Employee {
 		sex = "";
 		phone = "";
 		address = "";
+		sprema = "";
+		staz = 0;
+		pay = 0;
 	}
 	
-	public Employee(String name_, String surname_, String username_, String password_, String sex_, String phone_, String address_, Position position_) {
+	public Employee(String name_, String surname_, String username_, String password_, String sex_, String phone_, String address_, Position position_, String sprema_, int staz_, int pay_) {
 		name = name_;
 		surname = surname_;
 		username = username_;
@@ -30,6 +36,9 @@ public abstract class Employee {
 		phone = phone_;
 		address = address_;
 		position = position_;
+		sprema = sprema_;
+		staz = staz_;
+		pay = pay_;
 	}
 	
 	public String GetName() {
@@ -94,5 +103,29 @@ public abstract class Employee {
 	
 	public void SetPosition(Position position_) {
 		position = position_;
+	}
+	
+	public String GetSprema() {
+		return sprema;
+	}
+	
+	public void SetSprema(String arg) {
+		sprema = arg;
+	}
+	
+	public int GetStaz() {
+		return staz;
+	}
+	
+	public void SetStaz(int arg) {
+		staz = arg;
+	}
+	
+	public int GetPay() {
+		return pay;
+	}
+	
+	public void SetPay(int arg) {
+		pay = arg;
 	}
 }
