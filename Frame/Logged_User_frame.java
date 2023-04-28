@@ -21,6 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import Services.ManagerService;
+import Services.ClientService;
 import Services.KozmeticService;
 import Services.RecepcionistService;
 
@@ -209,29 +210,29 @@ public class Logged_User_frame {
 			//OPTION MENU ZA ADMINA
 			JMenuBar mainMenuRecepcioner = new JMenuBar();
 
-			JMenu gostiMenu = new JMenu("Gosti");
-			JMenu sobeMenu = new JMenu("Sobe");
+			//JMenu gostiMenu = new JMenu("Gosti");
+			//JMenu sobeMenu = new JMenu("Sobe");
 			JMenu rezervacijeMenu = new JMenu("Rezervacije");
 
-			JMenuItem dodajGostaItem = new JMenuItem("Dodaj gosta");
-			JMenuItem regulisiRezervacijeItem = new JMenuItem("Reguliši rezervacije");
-			JMenuItem listaGostijuItem = new JMenuItem("Lista gostiju");
+			//JMenuItem dodajGostaItem = new JMenuItem("Dodaj gosta");
+			JMenuItem regulisiRezervacijeItem = new JMenuItem("Napravi rezervaciju");
+			//JMenuItem listaGostijuItem = new JMenuItem("Lista gostiju");
 			JMenuItem pregledRezervacijaItem = new JMenuItem("Pregled rezervacija");
-			JMenuItem potvrdjeneRezervacijeItem = new JMenuItem("Potvrđene rezervacije");
-			JMenuItem pregledSobaItem = new JMenuItem("Pregled soba");
-			JMenuItem zauzeteSobeItem = new JMenuItem("Zauzete sobe");
+			//JMenuItem potvrdjeneRezervacijeItem = new JMenuItem("Potvrdjene rezervacije");
+			//JMenuItem pregledSobaItem = new JMenuItem("Pregled soba");
+			//JMenuItem zauzeteSobeItem = new JMenuItem("Zauzete sobe");
 
-			gostiMenu.add(dodajGostaItem);
-			gostiMenu.add(listaGostijuItem);
-			mainMenuRecepcioner.add(gostiMenu);
+			//gostiMenu.add(dodajGostaItem);
+			//gostiMenu.add(listaGostijuItem);
+			//mainMenuRecepcioner.add(gostiMenu);
 
-			sobeMenu.add(pregledSobaItem);
-			sobeMenu.add(zauzeteSobeItem);			
-			mainMenuRecepcioner.add(sobeMenu);
+			//sobeMenu.add(pregledSobaItem);
+			//sobeMenu.add(zauzeteSobeItem);			
+			//mainMenuRecepcioner.add(sobeMenu);
 
 			rezervacijeMenu.add(regulisiRezervacijeItem);
 			rezervacijeMenu.add(pregledRezervacijaItem);
-			rezervacijeMenu.add(potvrdjeneRezervacijeItem);			
+			//rezervacijeMenu.add(potvrdjeneRezervacijeItem);			
 			mainMenuRecepcioner.add(rezervacijeMenu);
 			
 			frame.setJMenuBar(mainMenuRecepcioner);
@@ -239,89 +240,76 @@ public class Logged_User_frame {
 			final Recepcioner recepcioner = new Recepcioner();
 			final RecepcionistService recepcionistService = new RecepcionistService();
 			
-			//btn_dodaj_gosta = new JButton("Dodaj gosta");
-			dodajGostaItem.addActionListener(new ActionListener() {
-		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   //recepcioner.RegisterGuest();
-		        	   recepcionistService.RegisterClient();
-		           }
-		    	});
-			//panel.add(btn_dodaj_gosta);
+//			dodajGostaItem.addActionListener(new ActionListener() {
+//		           public void actionPerformed(ActionEvent e) {		        	   
+//		        	   //recepcioner.RegisterGuest();
+//		        	   recepcionistService.RegisterClient();
+//		           }
+//		    	});
 			
 			//ne treba da bude button? msm da treba samo da se pozove nakon registracije?
-			//btn_check_in = new JButton("Regulisi rezervacije");
 			regulisiRezervacijeItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {
 		        	   try {
 						//recepcioner.RegulisiRezervaciju();
-						recepcionistService.RegulateReservation();
+						recepcionistService.MakeReservation();
+						
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 		           }
 		    	});
-			//panel.add(btn_check_in);
 			
-			//btn_lista_gostiju = new JButton("Lista gostiju");
-			listaGostijuItem.addActionListener(new ActionListener() {
-		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   try {
-						recepcioner.Guest_List();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-		           }
-		    	});
-			//panel.add(btn_lista_gostiju);
+//			listaGostijuItem.addActionListener(new ActionListener() {
+//		           public void actionPerformed(ActionEvent e) {		        	   
+//		        	   try {
+//						recepcioner.Guest_List();
+//						} catch (IOException e1) {
+//							e1.printStackTrace();
+//						}
+//		           }
+//		    	});
 			
-			//btn_pregled_rez = new JButton("Pregled rezervacija");
 			pregledRezervacijaItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
-						recepcioner.Pregled_Rezervacija();
+						//recepcioner.Pregled_Rezervacija();
+						recepcionistService.ReservationView();
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
 		           }
 		    	});
-			//panel.add(btn_pregled_rez);
 			
-			//btn_potvrdjene_rez = new JButton("Potvrdjene rezervacije");
-			potvrdjeneRezervacijeItem.addActionListener(new ActionListener() {
-		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   try {
-						recepcioner.Check_In();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-		           }
-		    	});
-			//panel.add(btn_potvrdjene_rez);
+//			potvrdjeneRezervacijeItem.addActionListener(new ActionListener() {
+//		           public void actionPerformed(ActionEvent e) {		        	   
+//		        	   try {
+//						recepcioner.Check_In();
+//						} catch (IOException e1) {
+//							e1.printStackTrace();
+//						}
+//		           }
+//		    	});
 			
-			//btn_pregled_soba = new JButton("Pregled soba");
-			pregledSobaItem.addActionListener(new ActionListener() {
-		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   try {
-						recepcioner.Pregled_Soba();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-		           }
-		    	});
-			//panel.add(btn_pregled_soba);
-			
-			//btn_check_out = new JButton("Zauzete sobe");
-			zauzeteSobeItem.addActionListener(new ActionListener() {
-		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   try {
-						recepcioner.Check_Out();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-		           }
-		    	});
-			//panel.add(btn_check_out);
+//			pregledSobaItem.addActionListener(new ActionListener() {
+//		           public void actionPerformed(ActionEvent e) {		        	   
+//		        	   try {
+//						recepcioner.Pregled_Soba();
+//						} catch (IOException e1) {
+//							e1.printStackTrace();
+//						}
+//		           }
+//		    	});
+//			
+//			zauzeteSobeItem.addActionListener(new ActionListener() {
+//		           public void actionPerformed(ActionEvent e) {		        	   
+//		        	   try {
+//						recepcioner.Check_Out();
+//						} catch (IOException e1) {
+//							e1.printStackTrace();
+//						}
+//		           }
+//		    	});
 			
 			JLabel recepcioner_info = new JLabel("Username: " + username + "       Pozicija: recepcioner");
 			panel.add(recepcioner_info);
@@ -380,51 +368,48 @@ public class Logged_User_frame {
 			JMenuBar mainMenuRecepcioner = new JMenuBar();
 			
 			JMenu rezervacijeMenu = new JMenu("Rezervacije");
-
+			
 			JMenuItem rezervisiItem = new JMenuItem("Napravi rezervaciju");
-			JMenuItem pregled_rezItem = new JMenuItem("Pregled odobrenih");
-			JMenuItem pregled_svih_rezItem = new JMenuItem("Pregled svih rezervacija");
+			JMenuItem pregled_rezItem = new JMenuItem("Pregled rezervacija");
+//			JMenuItem pregled_svih_rezItem = new JMenuItem("Pregled svih rezervacija");
 
 			rezervacijeMenu.add(rezervisiItem);
 			rezervacijeMenu.add(pregled_rezItem);
-			rezervacijeMenu.add(pregled_svih_rezItem);
+//			rezervacijeMenu.add(pregled_svih_rezItem);
 			mainMenuRecepcioner.add(rezervacijeMenu);
 			
 			frame.setJMenuBar(mainMenuRecepcioner);
 			
 			final Gosti gost = new Gosti();
-			//btn_dodaj_rez = new JButton("Napravi rezervaciju");
+			final ClientService clientService = new ClientService();
+			
 			rezervisiItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   try {
-						gost.ZahtevRezervacija(username);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+		        	   //gost.ZahtevRezervacija(username);
+					clientService.MakeReservation(username);
 		           }
 		    	});
-			//panel.add(btn_dodaj_rez);
 
-			//btn_pregled_rez = new JButton("Pregled rezervacija");
 			pregled_rezItem.addActionListener(new ActionListener() {
 		           public void actionPerformed(ActionEvent e) {		        	   
 		        	   try {
-						gost.PregledRezervacija(username);
+						//gost.PregledRezervacija(username);
+						clientService.ViewReservations(username);
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
 		           }
 		    	});
-			//panel.add(btn_pregled_rez);
-			pregled_svih_rezItem.addActionListener(new ActionListener() {
-		           public void actionPerformed(ActionEvent e) {		        	   
-		        	   try {
-						gost.Pregled_Svih_Rezervacija(username);
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-		           }
-		    	});
+			
+//			pregled_svih_rezItem.addActionListener(new ActionListener() {
+//		           public void actionPerformed(ActionEvent e) {		        	   
+//		        	   try {
+//						gost.Pregled_Svih_Rezervacija(username);
+//					} catch (IOException e1) {
+//						e1.printStackTrace();
+//					}
+//		           }
+//		    	});
 			JLabel gost_info = new JLabel("Username: " + username + "       Pozicija: gost");
 			panel.add(gost_info);
 					

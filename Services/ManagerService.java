@@ -498,7 +498,7 @@ public class ManagerService {
 		mainToolbar.setFloatable(false);		
 		frame.add(mainToolbar, BorderLayout.NORTH);
 		
-		String[] collNames = {"Korisničko ime", "Pozicija"};
+		String[] collNames = {"Korisnicko ime", "Pozicija"};
 		
 		final JTable table = new JTable(data, collNames);
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

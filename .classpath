@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspace/Java-Swing-Hotel-Reservations-main/src/lib/joda-time-2.11.1.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspace/Java-Swing-Hotel-Reservations-main/src/lib/miglayout-4.0-swing.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspace/Java-Swing-Hotel-Reservations-main/src/lib/opencsv-1.8.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspace/Java-Swing-Hotel-Reservations-main/src/lib/xchart-3.8.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
